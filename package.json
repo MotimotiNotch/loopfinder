@@ -1,0 +1,36 @@
+{
+  "name": "loopfinder",
+  "version": "0.1.0",
+  "description": "Find the feedback loops in your personal workspace: run your scripts with writes blocked, record what they read and write, add the human/AI steps by hand, and see every loop — including the ones you never declared.",
+  "license": "MIT",
+  "funding": "https://ko-fi.com/motimotinotch",
+  "bin": {
+    "loopfinder": "bin/loopfinder.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "trace/",
+    "public/",
+    "LICENSE",
+    "LICENSE-dagre",
+    "LICENSE-lucide",
+    "README.md",
+    "README.ja.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "demo": "node bin/loopfinder.js build --config examples/demo/loopfinder/config.json && node bin/loopfinder.js serve --config examples/demo/loopfinder/config.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "feedback-loop",
+    "data-flow",
+    "obsidian",
+    "workspace",
+    "visualization",
+    "tracing"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "scriptDirs": [
+    "scripts"
+  ],
+  "actors": {
+    "human": [
+      "me"
+    ],
+    "ai": [
+      "AI"
+    ]
+  },
+  "webLabels": [
+    {
+      "match": "^https://example\\.com/garden/",
+      "label": "Garden feed"
+    }
+  ],
+  "hubs": [
+    {
+      "type": "sections",
+      "name": "Daily note",
+      "note": "notes/daily/{date}.md",
+      "dir": "notes/daily",
+      "level": 2
+    }
+  ],
+  "lang": "en"
+}

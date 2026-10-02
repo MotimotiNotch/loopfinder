@@ -1,0 +1,211 @@
+/*
+ * A quiet, colourless tool. Colour is spent on one thing only: the loop you picked (amber).
+ * Node kinds are told apart by shape, not colour.
+ * Contrast of marks against the background: 8.73 (dark) / 3.62 (light), above the 3:1 guideline for graphics.
+ * Outside a picked loop everything drops to 18% opacity, so the loop stands out by both shape and brightness.
+ */
+:root {
+  --bg: #121316;
+  --bg-panel: #1a1c20;
+  --fg: #d7d9de;
+  --fg-muted: #9aa0ab;
+  --fg-faint: #6b717c;
+  --line: #3a3e46;
+  --line-strong: #5b616c;
+  --mark: #c3c7cf;
+  --loop: #e0a84a;
+  --radius: 8px;
+  /* Native widgets (scrollbars, select) follow the theme; without this they stay white in dark mode. */
+  color-scheme: dark;
+  /* Inherited, so it is set once here. */
+  scrollbar-color: var(--line-strong) var(--bg);
+}
+/* Light theme: when the system asks for it (and the viewer has not picked dark), or when the viewer picks light.
+   The same values are written twice because a media query cannot be combined with an attribute selector list. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f6f6f4;
+    --bg-panel: #ffffff;
+    --fg: #25272b;
+    --fg-muted: #5f646d;
+    --fg-faint: #8c919a;
+    --line: #cfd2d6;
+    --line-strong: #9a9fa8;
+    --mark: #4a4e56;
+    --loop: #b0741a;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f6f6f4;
+  --bg-panel: #ffffff;
+  --fg: #25272b;
+  --fg-muted: #5f646d;
+  --fg-faint: #8c919a;
+  --line: #cfd2d6;
+  --line-strong: #9a9fa8;
+  --mark: #4a4e56;
+  --loop: #b0741a;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.5 system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.faint { color: var(--fg-faint); font-size: 12px; }
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.bar h1 { font-size: 14px; font-weight: 600; margin: 0; }
+.bar select {
+  background: var(--bg-panel);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2px 6px;
+  font: inherit;
+}
+
+.legend { margin-left: auto; position: relative; }
+/* Buttons that carry a Lucide icon (theme, language, side pane). The icon follows the text colour. */
+.icon-button {
+  height: 24px; min-width: 26px; padding: 0 5px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  background: none; border: 1px solid var(--line); border-radius: var(--radius);
+  color: var(--fg-muted); font: inherit; font-size: 11px; cursor: pointer;
+}
+.icon-button:hover { color: var(--fg); }
+.icon-button.with-text { padding: 0 8px 0 6px; }
+.icon-button svg, .icon svg { width: 15px; height: 15px; display: block; }
+.icon { display: inline-flex; }
+.layout.side-hidden { grid-template-columns: 1fr; }
+.layout.side-hidden .side { display: none; }
+.legend summary {
+  list-style: none;
+  cursor: pointer;
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  color: var(--fg-muted);
+}
+.legend summary:hover { color: var(--fg); }
+.legend summary svg { width: 17px; height: 17px; display: block; }
+.legend summary::-webkit-details-marker { display: none; }
+.legend-body {
+  position: absolute; right: 0; top: 30px; z-index: 10;
+  width: 300px;
+  background: var(--bg-panel);  /* floating text is never see-through */
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.legend-body p { margin: 0 0 8px; }
+.legend-body ul { list-style: none; margin: 0; padding: 0; }
+.legend-body li { display: flex; align-items: center; gap: 8px; padding: 2px 0; color: var(--fg-muted); }
+.legend-body svg { width: 24px; height: 16px; flex: none; overflow: visible; }
+
+.layout { flex: 1; display: grid; grid-template-columns: 1fr 300px; min-height: 0; }
+/* Wraps the canvas so the zoom button stays in the corner instead of scrolling away. */
+.canvas-wrap { position: relative; min-height: 0; display: grid; }
+.canvas { overflow: auto; min-height: 0; cursor: grab; }
+.zoom-reset {
+  position: absolute; right: 10px; bottom: 10px;
+  padding: 3px 8px;
+  border: 1px solid var(--line-strong); border-radius: var(--radius);
+  background: var(--bg-panel); color: var(--fg-muted);
+  font: inherit; font-size: 11px; font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.zoom-reset:hover { color: var(--fg); }
+.canvas.dragging, .canvas.dragging .node { cursor: grabbing; }
+.canvas svg { display: block; }
+/* The stage gives the diagram room to be dragged anywhere; app.js sizes it. */
+.flow-stage { position: relative; }
+.flow-stage > svg { position: absolute; }
+.side {
+  border-left: 1px solid var(--line);
+  padding: 12px 16px;
+  overflow: auto;
+}
+.side h2 { font-size: 12px; font-weight: 600; color: var(--fg-muted); margin: 0 0 6px; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .layout.side-hidden { grid-template-rows: 1fr; }
+  .side { border-left: 0; border-top: 1px solid var(--line); max-height: 45vh; }
+}
+
+.loops { list-style: none; margin: 0 0 12px; padding: 0; }
+.loops button {
+  width: 100%;
+  display: flex; align-items: center; gap: 8px;
+  background: none; border: 0; border-radius: var(--radius);
+  color: var(--fg);
+  font: inherit; text-align: left;
+  padding: 5px 6px;
+  cursor: pointer;
+}
+.loops button:hover { background: var(--bg-panel); }
+.loops button[aria-pressed="true"] { background: var(--bg-panel); color: var(--loop); }
+.loops .unnamed { color: var(--fg-muted); font-style: italic; }
+.loops svg { width: 28px; height: 14px; flex: none; }
+.loops svg circle { fill: var(--fg-faint); }
+.loops button[aria-pressed="true"] svg circle { fill: var(--loop); }
+.warn { color: var(--fg-muted); font-size: 12px; }
+
+.detail {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+.detail h3 { font-size: 13px; font-weight: 600; margin: 0 0 2px; word-break: break-all; }
+.detail .kind { color: var(--fg-faint); font-size: 12px; margin: 0 0 8px; }
+.detail dl { margin: 0; }
+.detail dt { color: var(--fg-faint); font-size: 12px; margin-top: 8px; }
+.detail dd { margin: 2px 0 0; color: var(--fg-muted); word-break: break-all; }
+.detail ul { margin: 2px 0 0; padding-left: 16px; }
+
+/* ---- graph ---- */
+.edge { stroke: var(--line-strong); stroke-width: 1.2; fill: none; }
+.edge.declared { stroke-dasharray: 4 3; }
+.edge.calls { stroke: var(--line); stroke-dasharray: 1 3; }
+.arrow { fill: var(--line-strong); }
+.mark-web { fill: none; stroke: var(--mark); stroke-width: 1.5; }
+.mark-script { fill: var(--mark); }
+.mark-file { fill: var(--mark); }
+.mark-repo { fill: none; stroke: var(--mark); stroke-width: 1.5; }
+.mark-step-ai { fill: none; stroke: var(--mark); stroke-width: 1.5; }
+.mark-step-human { fill: var(--mark); }
+/* Steps done by someone who is neither you nor an AI (visitors, CI): same diamond, dashed. */
+.mark-step-other { fill: none; stroke: var(--mark); stroke-width: 1.5; stroke-dasharray: 2.5 2; }
+.group-frame { fill: none; stroke: var(--line); stroke-width: 1; }
+.group-label { fill: var(--fg-faint); font-size: 10px; }
+.mark-section { fill: none; stroke: var(--mark); stroke-width: 1.5; }
+/* In section hubs, a link guessed from code is drawn weaker than a recorded or declared one. */
+.edge.guess { stroke-dasharray: 1.5 3; }
+.origin-tick { fill: none; stroke: var(--fg-muted); stroke-width: 1.5; }
+.node text { fill: var(--fg-muted); font-size: 11px; }
+.node .actor { fill: var(--fg-faint); font-size: 10px; }
+.node { cursor: pointer; }
+.node.selected text { fill: var(--fg); }
+
+/* A picked loop: everything else sinks, only the loop gets colour. */
+.focus .node:not(.in-loop), .focus .edge:not(.in-loop), .focus .group:not(.in-loop) { opacity: 0.18; }
+.edge.in-loop { stroke: var(--loop); stroke-width: 2; opacity: 1; }
+.node.in-loop .mark-web, .node.in-loop .mark-repo, .node.in-loop .mark-step-ai, .node.in-loop .mark-step-other, .node.in-loop .mark-section { stroke: var(--loop); }
+.node.in-loop .mark-script, .node.in-loop .mark-file, .node.in-loop .mark-step-human { fill: var(--loop); }
+.node.in-loop text { fill: var(--fg); }
+.arrow.in-loop { fill: var(--loop); }
+
+/* Dots moving along the edges: faint when nothing is picked, amber around a picked loop. */
+.flow-dot { pointer-events: none; }
+.flow-dot.ambient { fill: var(--fg-muted); fill-opacity: 0.55; }
+.flow-dot.loop { fill: var(--loop); }

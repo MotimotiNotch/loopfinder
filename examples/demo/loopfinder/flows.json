@@ -1,0 +1,73 @@
+{
+  "flows": [
+    {
+      "name": "reading",
+      "about": "A script collects new items from a gardening feed into the daily note; I read them and pick something to try.",
+      "sources": [
+        "scripts/fetch_feed.js",
+        "notes/daily/2026-10-02.md"
+      ],
+      "trace": [
+        "scripts/fetch_feed.js 2026-10-02"
+      ],
+      "start": [
+        "web:example.com"
+      ],
+      "edges": [
+        "notes/daily/{date}.md#Reading -> [me] Read and pick something to try",
+        "[me] Read and pick something to try -> notes/daily/{date}.md#Tasks",
+        "[me] Read and pick something to try -> notes/ideas.md"
+      ],
+      "loops": [
+        {
+          "name": "Do not show the same item twice",
+          "nodes": [
+            "scripts/fetch_feed.js",
+            "scripts/seen.json"
+          ]
+        },
+        {
+          "name": "The Reading section is rewritten in place",
+          "nodes": [
+            "scripts/fetch_feed.js",
+            "notes/daily/{date}.md"
+          ]
+        },
+        {
+          "name": "Reading becomes tasks",
+          "nodes": [
+            "notes/daily/{date}.md",
+            "[me] Read and pick something to try"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weekly",
+      "about": "A script summarises the week; I plan the next one from it, and an AI assistant suggests ideas. The AI's ideas feeding the next summary is left undeclared on purpose: build reports it as an unnamed loop.",
+      "sources": [
+        "scripts/weekly_summary.py",
+        "summary/weekly.md"
+      ],
+      "trace": [
+        "scripts/weekly_summary.py"
+      ],
+      "edges": [
+        "summary/weekly.md -> [me] Plan next week",
+        "[me] Plan next week -> notes/daily/{date}.md#Tasks",
+        "summary/weekly.md -> [AI] Suggest ideas from the week",
+        "[AI] Suggest ideas from the week -> notes/ideas.md"
+      ],
+      "loops": [
+        {
+          "name": "Next week's tasks come from this week's summary",
+          "nodes": [
+            "[me] Plan next week",
+            "scripts/weekly_summary.py"
+          ],
+          "contains": true
+        }
+      ]
+    }
+  ]
+}

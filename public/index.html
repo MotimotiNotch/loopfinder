@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>loopfinder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <h1>loopfinder</h1>
+    <select id="flow" data-i18n-label="flow"></select>
+    <span id="generated" class="faint"></span>
+    <details class="legend">
+      <summary data-i18n-label="legend"><span class="icon" data-icon="info"></span></summary>
+      <div class="legend-body">
+        <p class="faint" data-i18n="legendIntro"></p>
+        <ul>
+          <li><svg viewBox="-8 -8 16 16"><circle r="5" class="mark-web"/></svg><span data-i18n="kind_web"></span></li>
+          <li><svg viewBox="-8 -8 16 16"><rect x="-4" y="-4" width="8" height="8" class="mark-script"/></svg><span data-i18n="kind_script"></span></li>
+          <li><svg viewBox="-8 -8 16 16"><circle r="5" class="mark-file"/></svg><span data-i18n="kind_file"></span></li>
+          <li><svg viewBox="-8 -8 16 16"><rect x="-5" y="-5" width="10" height="10" class="mark-repo"/></svg><span data-i18n="kind_repo"></span></li>
+          <li><svg viewBox="-8 -8 16 16"><path d="M0,-6 L6,0 L0,6 L-6,0 Z" class="mark-step-ai"/></svg><span data-i18n="step_ai"></span></li>
+          <li><svg viewBox="-8 -8 16 16"><path d="M0,-6 L6,0 L0,6 L-6,0 Z" class="mark-step-human"/></svg><span data-i18n="step_human"></span></li>
+          <li><svg viewBox="-8 -8 16 16"><path d="M0,-6 L6,0 L0,6 L-6,0 Z" class="mark-step-other"/></svg><span data-i18n="step_other"></span></li>
+          <li><svg viewBox="-12 -8 24 16"><rect x="-11" y="-7" width="22" height="14" rx="4" class="group-frame"/></svg><span data-i18n="group"></span></li>
+          <li><svg viewBox="0 -4 24 8"><line x1="0" y1="0" x2="24" y2="0" class="edge"/></svg><span data-i18n="edge_trace"></span></li>
+          <li><svg viewBox="0 -4 24 8"><line x1="0" y1="0" x2="24" y2="0" class="edge declared"/></svg><span data-i18n="edge_declared"></span></li>
+          <li><svg viewBox="-12 -8 24 16"><rect x="-9" y="-4" width="18" height="8" rx="2" class="mark-section"/></svg><span data-i18n="kind_section"></span></li>
+          <li><svg viewBox="0 -4 24 8"><line x1="0" y1="0" x2="24" y2="0" class="edge guess"/></svg><span data-i18n="edge_guess"></span></li>
+          <li><svg viewBox="-8 -8 16 16"><path d="M-7,-4 L-2,0 L-7,4" class="origin-tick"/><circle cx="3" r="4" class="mark-file"/></svg><span data-i18n="origin"></span></li>
+        </ul>
+      </div>
+    </details>
+    <button type="button" id="theme-toggle" class="icon-button"></button>
+    <button type="button" id="lang-toggle" class="icon-button with-text"><span class="icon" data-icon="languages"></span><span id="lang-name"></span></button>
+    <button type="button" id="side-toggle" class="icon-button" aria-controls="side" aria-pressed="true"></button>
+  </header>
+  <main class="layout">
+    <div class="canvas-wrap">
+      <section class="canvas" id="canvas"></section>
+      <button type="button" id="zoom-reset" class="zoom-reset" data-i18n-label="resetZoom" hidden></button>
+    </div>
+    <aside class="side" id="side">
+      <h2 id="list-title"></h2>
+      <ul id="loops" class="loops"></ul>
+      <p id="missing" class="warn" hidden></p>
+      <div id="detail" class="detail" hidden></div>
+    </aside>
+  </main>
+  <script src="vendor/dagre.min.js"></script>
+  <script src="icons.js"></script>
+  <script src="i18n.js"></script>
+  <script src="layout.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

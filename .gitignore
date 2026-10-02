@@ -1,0 +1,6 @@
+node_modules/
+# Build output and trace records list your file paths; keep them out of version control.
+.loopfinder/
+# The demo's AGENTS.md is rewritten by every run.
+examples/demo/loopfinder/AGENTS.md
+__pycache__/
