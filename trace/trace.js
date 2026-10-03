@@ -27,7 +27,7 @@ const SELF = __filename.replace(/\\/g, '/');
 const events = [];
 
 // The same folder can be reached by two spellings (a Windows short name like RUNNER~1, a symlink).
-// ES module stack frames carry the real path, so it is mapped back onto ROOT as it was given.
+// A path that resolves to the real folder is mapped back onto ROOT as it was given.
 const REAL_ROOT = (() => {
   try { return fs.realpathSync.native(ROOT).replace(/\\/g, '/').replace(/\/$/, ''); } catch { return ROOT; }
 })();
@@ -40,9 +40,12 @@ function caller() {
   for (const line of stack) {
     // "at fn (/a/b.js:1:2)", "at /a/b.js:1:2", "at async /a/b.js:1:2" or a file:// URL. Without the
     // parentheses, the leading "at " must not become part of a POSIX path.
-    const m = /(?:\(|^at (?:async )?)(?:file:\/\/(?:\/(?=[A-Za-z]:))?)?((?:[A-Za-z]:)?[^():]+\.(?:js|mjs|cjs|ts)):\d+:\d+\)?$/.exec(line.trim());
+    // A file:// URL is percent-encoded: a Windows short name like RUNNER~1 shows up as RUNNER%7E1.
+    const m = /(?:\(|^at (?:async )?)(file:\/\/(?:\/(?=[A-Za-z]:))?)?((?:[A-Za-z]:)?[^():]+\.(?:js|mjs|cjs|ts)):\d+:\d+\)?$/.exec(line.trim());
     if (!m) continue;
-    const file = norm(m[1]);
+    let raw = m[2];
+    if (m[1]) try { raw = decodeURIComponent(raw); } catch { /* keep as is */ }
+    const file = norm(raw);
     if (file === SELF || file.includes('/node_modules/')) continue;
     if (underRoot(file)) return file;
   }
