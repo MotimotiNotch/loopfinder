@@ -189,6 +189,23 @@ test('nodes: dates fold into a placeholder, steps carry who does them', () => {
   assert.strictEqual(n.nodeFromRef('[visitor] Share').actorKind, 'other');
 });
 
+test('dead ends: written and never read, counted over all flows; sending out is not one', () => {
+  const flows = { flows: [
+    { name: 'write', edges: ['notes/in.md -> [me] Write it up -> notes/handoff.md', '[me] Write it up -> web:chat'] },
+    { name: 'read', edges: ['notes/handoff.md -> [AI] Pick it up -> notes/log.md'] },
+  ] };
+  const dir = workspace({ 'loopfinder/config.json': '{}', 'loopfinder/flows.json': JSON.stringify(flows) });
+  const graph = build(loadConfig(path.join(dir, 'loopfinder', 'config.json')), { warn: () => {} });
+  // handoff.md ends the first flow but the second reads it; the message to web:chat is an exit.
+  assert.deepStrictEqual(graph.deadEnds, ['notes/log.md']);
+  assert.strictEqual(graph.nodes.find(nd => nd.id === 'notes/log.md').deadEnd, true);
+  // Control: once nobody reads the hand-off, it is reported too.
+  flows.flows.pop();
+  fs.writeFileSync(path.join(dir, 'loopfinder', 'flows.json'), JSON.stringify(flows));
+  const alone = build(loadConfig(path.join(dir, 'loopfinder', 'config.json')), { warn: () => {} });
+  assert.deepStrictEqual(alone.deadEnds, ['notes/handoff.md']);
+});
+
 function snapshot(dir) {
   const out = {};
   const walk = rel => {
@@ -226,6 +243,8 @@ test('demo: builds the expected loops and leaves the workspace untouched', () =>
   // The outer loop: the weekly review rewrites the topic list the feed loop runs on.
   const outer = loops.find(l => l.name === 'The weekly review changes what the feed collects');
   assert.ok(outer.paths.every(p => p.includes('scripts/feed_topics.json') && p.includes('scripts/fetch_feed.js')));
+  // The one dead end left on purpose: statistics the weekly script writes and nobody reads.
+  assert.deepStrictEqual(graph.deadEnds, ['summary/stats.csv']);
   assert.strictEqual(loops.filter(l => !l.name).length, 1, 'the one loop left undeclared on purpose');
   assert.deepStrictEqual(graph.missingLoops, []);
   // The section hub knows which heading each step touches.

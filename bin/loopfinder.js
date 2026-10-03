@@ -63,6 +63,8 @@ async function cmdBuild() {
   for (const l of real) console.log(`  ${l.flow}: ${l.name || '(unnamed loop)'}`);
   const unnamed = real.filter(l => !l.name);
   if (unnamed.length) console.log(`! ${unnamed.length} unnamed loop(s): feedback you did not declare. Check whether it is intended.`);
+  const ends = graph.deadEnds.map(id => graph.nodes.find(nd => nd.id === id)?.path || id);
+  if (ends.length) console.log(`! ${ends.length} dead end(s): written but never read: ${ends.join(', ')}. Ask whether someone reads it.`);
   for (const m of graph.missingLoops) console.log(`! declared but not found: ${m} (a step changed and the loop broke?)`);
   await runChecks(config, graph);
 }

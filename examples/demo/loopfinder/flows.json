@@ -54,7 +54,7 @@
     },
     {
       "name": "weekly",
-      "about": "A script summarises the week; I plan the next one from it, and an AI assistant suggests ideas. The AI's ideas feeding the next summary is left undeclared on purpose: build reports it as an unnamed loop.",
+      "about": "A script summarises the week; I plan the next one from it, and an AI assistant suggests ideas. The AI's ideas feeding the next summary is left undeclared on purpose: build reports it as an unnamed loop. The statistics file nobody reads is also left on purpose: build reports it as a dead end.",
       "sources": [
         "scripts/weekly_summary.py",
         "summary/weekly.md"

@@ -41,6 +41,8 @@ function drawMark(g, node) {
     el('rect', { x: -9, y: -4, width: 18, height: 8, rx: 2, class: 'mark-section' }, g);
   } else el('circle', { r: 5, class: 'mark-file' }, g);
   if (node.origin) el('path', { d: 'M-22,-5 L-16,0 L-22,5', class: 'origin-tick' }, g);
+  // A dead end gets a short wall on the side the data would leave from.
+  if (node.deadEnd) el('path', { d: 'M15,-6 L15,6', class: 'deadend-tick' }, g);
 }
 
 function render() {
@@ -249,6 +251,10 @@ function renderLoops() {
   const lost = graph.missingLoops.filter(m => m.startsWith(`${current}: `)).map(m => m.slice(current.length + 2));
   missing.hidden = lost.length === 0;
   missing.textContent = lost.length ? t('missing', { list: lost.join(LANG === 'ja' ? '、' : ', ') }) : '';
+  const ends = document.getElementById('dead-ends');
+  const here = graph.nodes.filter(n => n.deadEnd && (n.flows || []).includes(current)).map(n => n.label);
+  ends.hidden = here.length === 0;
+  ends.textContent = here.length ? t('deadEnds', { list: here.join(LANG === 'ja' ? '、' : ', ') }) : '';
 }
 
 function evidenceText(ev) {
@@ -271,7 +277,7 @@ function renderDetail() {
   if (!n) return;
   const h = document.createElement('h3'); h.textContent = n.label; box.appendChild(h);
   const k = document.createElement('p'); k.className = 'kind';
-  k.textContent = (n.kind === 'step' ? t('stepOf', { actor: n.actor }) : t(`kind_${n.kind}`)) + ((n.originIn || []).includes(current) ? t('originSuffix') : '');
+  k.textContent = (n.kind === 'step' ? t('stepOf', { actor: n.actor }) : t(`kind_${n.kind}`)) + ((n.originIn || []).includes(current) ? t('originSuffix') : '') + (n.deadEnd ? t('deadEndSuffix') : '');
   box.appendChild(k);
   const dl = document.createElement('dl');
   const add = (term, values) => {

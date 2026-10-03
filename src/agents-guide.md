@@ -45,8 +45,13 @@ describe are flows. This file is the only one about the survey itself.
    - **Declared but not found**: a loop you declared does not exist in the graph. Either your
      declaration is wrong or a step has changed. Read the flow's `sources` again before changing
      anything.
-6. **Report in a few lines**: the flows, the loops, the unnamed loops, and what you could not
-   determine (and why).
+   - **Dead end**: a file that something writes and no flow reads. Reading by a person is not
+     recorded, so ask the user whether someone reads it. If someone does, declare that reading
+     step (with the user's words for it). If nobody does, that is a finding: report it (output
+     nobody collects, a hand-off the other side stopped reading). Do not add a reading edge just
+     to make it go away.
+6. **Report in a few lines**: the flows, the loops, the unnamed loops, the dead ends, and what you
+   could not determine (and why).
 
 **When the user cannot be asked** (they told you to work alone, or are away): do not guess on their
 behalf. Leave loops unnamed, leave undecided scripts out of `trace`, and end your report with the

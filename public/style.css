@@ -200,6 +200,7 @@ body {
 /* In section hubs, a link guessed from code is drawn weaker than a recorded or declared one. */
 .edge.guess { stroke-dasharray: 1.5 3; }
 .origin-tick { fill: none; stroke: var(--fg-muted); stroke-width: 1.5; }
+.deadend-tick { fill: none; stroke: var(--fg-muted); stroke-width: 1.5; }
 .node text { fill: var(--fg-muted); font-size: 11px; }
 .node .actor { fill: var(--fg-faint); font-size: 10px; }
 .node { cursor: pointer; }

@@ -151,6 +151,16 @@ function build(config, opts = {}) {
     node.originIn = node.flows.filter(f => !dataEdges.some(e => e.to === node.id && e.flows.includes(f)));
   }
 
+  // A dead end is data that something writes and nothing reads, counted over all flows together:
+  // what one flow leaves behind may be what another flow reads. Writing to a web service is an
+  // intended exit, so only files and repositories count. Reading by a person is not recorded, so a
+  // dead end may also be a reading step nobody declared; either way it is worth asking about.
+  const deadEnds = [...nodes.values()]
+    .filter(nd => (nd.kind === 'file' || nd.kind === 'repo')
+      && dataEdges.some(e => e.to === nd.id) && !dataEdges.some(e => e.from === nd.id))
+    .map(nd => nd.id);
+  for (const id of deadEnds) nodes.get(id).deadEnd = true;
+
   const hubs = buildHubs(config, { flows, traces, nodes, edges: dataEdges, n });
   const all = [...loops, ...hubs.flatMap(h => h.loops)].map((l, i) => ({ ...l, id: i }));
   return {
@@ -165,6 +175,7 @@ function build(config, opts = {}) {
     edges: [...edges.values(), ...hubs.flatMap(h => h.edges)],
     loops: all,
     missingLoops: [...new Set(missing)],
+    deadEnds,
   };
 }
 

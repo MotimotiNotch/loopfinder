@@ -1,4 +1,5 @@
 """Reads the week's daily notes and the idea list, and writes summary/weekly.md.
+Also writes summary/stats.csv (counts per week), which nothing reads yet.
 
     python scripts/weekly_summary.py
 """
@@ -9,6 +10,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DAILY = os.path.join(HERE, "..", "notes", "daily")
 IDEAS = os.path.join(HERE, "..", "notes", "ideas.md")
 OUT = os.path.join(HERE, "..", "summary", "weekly.md")
+STATS = os.path.join(HERE, "..", "summary", "stats.csv")
 
 tasks, logs = [], []
 for name in sorted(os.listdir(DAILY)):
@@ -25,3 +27,6 @@ with open(OUT, "w", encoding="utf-8") as f:
     f.writelines("- %s\n" % t for t in tasks)
     f.write("\n## Ideas to try\n")
     f.writelines("- %s\n" % i for i in ideas)
+
+with open(STATS, "a", encoding="utf-8") as f:
+    f.write("%d,%d\n" % (len(tasks), len(ideas)))

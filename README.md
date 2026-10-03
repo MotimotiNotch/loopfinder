@@ -20,7 +20,8 @@ loopfinder draws that system and lists every loop in it:
    with writes blocked, so nothing on disk changes.
 3. **It counts every simple cycle, gives each one the name you declared, and reports the rest**:
    an *unnamed loop* is feedback you did not declare; a *missing loop* is one you declared that is no
-   longer there (a step changed and the loop broke).
+   longer there (a step changed and the loop broke). It also reports *dead ends*: files something
+   writes and no flow reads (output nobody collects, or a reading step nobody declared).
 
 ![The demo's "reading" flow with one loop picked](docs/demo-reading.png)
 
@@ -69,8 +70,9 @@ node /path/to/loopfinder/bin/loopfinder.js build
 node /path/to/loopfinder/bin/loopfinder.js serve
 ```
 
-`build` prints the loops it found, the unnamed ones, and the declared ones it could not find. Hand the
-unnamed ones back to the agent: it asks you which are intended and names them. To survey again after
+`build` prints the loops it found, the unnamed ones, the declared ones it could not find, and the dead
+ends. Hand the unnamed loops and the dead ends back to the agent: it asks you which loops are intended
+and names them, and whether someone reads each dead end. To survey again after
 your routines change, ask again; the agent starts from the files each flow was learned from.
 
 Everything loopfinder keeps is in two folders: `loopfinder/` (the flows and the config — worth keeping
