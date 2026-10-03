@@ -43,7 +43,8 @@ function run(cmd, args, dir, env = {}) {
     cwd: dir, encoding: 'utf8', timeout: 60000,
     env: { ...process.env, LOOPFINDER_OUT: out, LOOPFINDER_ROOT: dir, ...env },
   });
-  assert.ok(fs.existsSync(out), `no trace written. stderr:\n${r.stderr}`);
+  assert.ok(fs.existsSync(out),
+    `no trace written (status ${r.status}, signal ${r.signal}, error ${r.error?.message}). stdout:\n${r.stdout}\nstderr:\n${r.stderr}`);
   return { r, trace: JSON.parse(fs.readFileSync(out, 'utf8')) };
 }
 
