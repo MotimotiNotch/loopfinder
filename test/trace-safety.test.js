@@ -110,9 +110,10 @@ test('node hook: ES module named imports are covered too', () => {
   const dir = scratch();
   fs.writeFileSync(path.join(dir, 'esm.mjs'), JS_ESM);
   const before = snapshot(dir);
-  const { trace } = run(process.execPath, ['-r', TRACE_JS, 'esm.mjs'], dir);
+  const { r, trace } = run(process.execPath, ['-r', TRACE_JS, 'esm.mjs'], dir);
   assert.deepStrictEqual(snapshot(dir), before);
-  assert.ok(trace.events.some(e => e.kind === 'write' && e.target.endsWith('/note.md')));
+  assert.ok(trace.events.some(e => e.kind === 'write' && e.target.endsWith('/note.md')),
+    `no write to note.md recorded (root ${dir}). events:\n${JSON.stringify(trace.events, null, 1)}\nstderr:\n${r.stderr}`);
 });
 
 test('node hook: --allow-network lets fetch through (it is only recorded)', () => {
