@@ -136,7 +136,15 @@ body {
   border-left: 1px solid var(--line);
   padding: 12px 16px;
   overflow: auto;
+  display: flex; flex-direction: column;
 }
+/* Licence and support links sit at the foot of the pane, out of the way of the loops. */
+.side-foot {
+  margin-top: auto; padding-top: 12px;
+  color: var(--fg-faint); font-size: 11px; line-height: 1.7;
+}
+.side-foot a { color: var(--fg-muted); text-decoration: none; }
+.side-foot a:hover { color: var(--fg); text-decoration: underline; }
 .side h2 { font-size: 12px; font-weight: 600; color: var(--fg-muted); margin: 0 0 6px; }
 @media (max-width: 760px) {
   .layout { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }

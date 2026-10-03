@@ -4,6 +4,7 @@ const STRINGS = {
   en: {
     flow: 'Flow',
     legend: 'Legend',
+    thirdParty: 'Includes ',
     legendIntro: 'A mark is "where", a line is "data flowing". Only the loop you pick gets colour.',
     kind_web: 'External service',
     kind_script: 'Script',
@@ -58,6 +59,7 @@ const STRINGS = {
   ja: {
     flow: '流れ',
     legend: '凡例',
+    thirdParty: '同梱: ',
     legendIntro: '点は「どこ」、線は「データの流れ」。色が付くのは選んだ輪だけ。',
     kind_web: '外のサービス',
     kind_script: 'スクリプト',
