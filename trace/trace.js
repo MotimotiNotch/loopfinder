@@ -26,13 +26,21 @@ const LEVEL = '#'.repeat(Number(process.env.LOOPFINDER_HEADING_LEVEL || 2));
 const SELF = __filename.replace(/\\/g, '/');
 const events = [];
 
-const norm = p => path.resolve(String(p instanceof URL ? p.pathname.replace(/^\/([A-Za-z]:)/, '$1') : p)).replace(/\\/g, '/');
+// The same folder can be reached by two spellings (a Windows short name like RUNNER~1, a symlink).
+// ES module stack frames carry the real path, so it is mapped back onto ROOT as it was given.
+const REAL_ROOT = (() => {
+  try { return fs.realpathSync.native(ROOT).replace(/\\/g, '/').replace(/\/$/, ''); } catch { return ROOT; }
+})();
+const toRoot = f => (REAL_ROOT !== ROOT && (f === REAL_ROOT || f.startsWith(`${REAL_ROOT}/`)) ? ROOT + f.slice(REAL_ROOT.length) : f);
+const norm = p => toRoot(path.resolve(String(p instanceof URL ? p.pathname.replace(/^\/([A-Za-z]:)/, '$1') : p)).replace(/\\/g, '/'));
 const underRoot = f => f === ROOT || f.startsWith(`${ROOT}/`);
 
 function caller() {
   const stack = new Error().stack.split('\n').slice(2);
   for (const line of stack) {
-    const m = /\(?((?:[A-Za-z]:)?[^():]+\.(?:js|mjs|cjs|ts)):\d+:\d+\)?$/.exec(line.trim());
+    // "at fn (/a/b.js:1:2)", "at /a/b.js:1:2", "at async /a/b.js:1:2" or a file:// URL. Without the
+    // parentheses, the leading "at " must not become part of a POSIX path.
+    const m = /(?:\(|^at (?:async )?)(?:file:\/\/(?:\/(?=[A-Za-z]:))?)?((?:[A-Za-z]:)?[^():]+\.(?:js|mjs|cjs|ts)):\d+:\d+\)?$/.exec(line.trim());
     if (!m) continue;
     const file = norm(m[1]);
     if (file === SELF || file.includes('/node_modules/')) continue;
