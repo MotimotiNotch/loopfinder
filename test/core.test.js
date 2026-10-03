@@ -221,7 +221,11 @@ test('demo: builds the expected loops and leaves the workspace untouched', () =>
     "Next week's tasks come from this week's summary",
     'Reading becomes tasks',
     'The Reading section is rewritten in place',
+    'The weekly review changes what the feed collects',
   ]);
+  // The outer loop: the weekly review rewrites the topic list the feed loop runs on.
+  const outer = loops.find(l => l.name === 'The weekly review changes what the feed collects');
+  assert.ok(outer.paths.every(p => p.includes('scripts/feed_topics.json') && p.includes('scripts/fetch_feed.js')));
   assert.strictEqual(loops.filter(l => !l.name).length, 1, 'the one loop left undeclared on purpose');
   assert.deepStrictEqual(graph.missingLoops, []);
   // The section hub knows which heading each step touches.

@@ -2,13 +2,15 @@
   "flows": [
     {
       "name": "reading",
-      "about": "A script collects new items from a gardening feed into the daily note; I read them and pick something to try.",
+      "about": "A script collects new items about my chosen topics from a gardening feed into the daily note; I read them and pick something to try. Once a week I look at the summary and change which topics the feed collects.",
       "sources": [
         "scripts/fetch_feed.js",
+        "scripts/weekly_summary.py",
         "notes/daily/2026-10-02.md"
       ],
       "trace": [
-        "scripts/fetch_feed.js 2026-10-02"
+        "scripts/fetch_feed.js 2026-10-02",
+        "scripts/weekly_summary.py"
       ],
       "start": [
         "web:example.com"
@@ -16,7 +18,8 @@
       "edges": [
         "notes/daily/{date}.md#Reading -> [me] Read and pick something to try",
         "[me] Read and pick something to try -> notes/daily/{date}.md#Tasks",
-        "[me] Read and pick something to try -> notes/ideas.md"
+        "[me] Read and pick something to try -> notes/ideas.md",
+        "summary/weekly.md -> [me] Review the week and change what to collect -> scripts/feed_topics.json"
       ],
       "loops": [
         {
@@ -39,6 +42,13 @@
             "notes/daily/{date}.md",
             "[me] Read and pick something to try"
           ]
+        },
+        {
+          "name": "The weekly review changes what the feed collects",
+          "nodes": [
+            "[me] Review the week and change what to collect"
+          ],
+          "contains": true
         }
       ]
     },

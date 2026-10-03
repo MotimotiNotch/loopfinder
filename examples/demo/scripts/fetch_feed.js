@@ -1,4 +1,5 @@
 // Fetches a feed and puts new items under "## Reading" in a daily note.
+// Only items about the topics in feed_topics.json are kept; that list is what the feed is for.
 // Items already shown are remembered in seen.json, so they are not shown twice.
 //   node scripts/fetch_feed.js 2026-10-02
 const fs = require('fs');
@@ -7,6 +8,7 @@ const path = require('path');
 const day = process.argv[2] || new Date().toISOString().slice(0, 10);
 const note = path.join(__dirname, '..', 'notes', 'daily', `${day}.md`);
 const seenFile = path.join(__dirname, 'seen.json');
+const topicsFile = path.join(__dirname, 'feed_topics.json');
 
 async function items() {
   try {
@@ -20,8 +22,11 @@ async function items() {
 }
 
 (async () => {
+  const topics = JSON.parse(fs.readFileSync(topicsFile, 'utf8')).collect.map(t => t.toLowerCase());
   const seen = new Set(JSON.parse(fs.readFileSync(seenFile, 'utf8')));
-  const fresh = (await items()).filter(t => !seen.has(t));
+  const fresh = (await items())
+    .filter(t => topics.some(topic => t.toLowerCase().includes(topic)))
+    .filter(t => !seen.has(t));
   for (const t of fresh) seen.add(t);
   fs.writeFileSync(seenFile, JSON.stringify([...seen], null, 2) + '\n');
   const text = fs.readFileSync(note, 'utf8');
