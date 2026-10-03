@@ -51,7 +51,7 @@ const isPath = p => typeof p === 'string' || p instanceof URL || Buffer.isBuffer
 
 // ---- what a Markdown write would change, by heading (for section hubs) ----
 const orig = {};
-for (const k of ['readFileSync', 'writeFileSync', 'openSync', 'createWriteStream', 'open']) orig[k] = fs[k];
+for (const k of ['readFileSync', 'writeFileSync', 'openSync', 'writeSync', 'closeSync', 'createWriteStream', 'open']) orig[k] = fs[k];
 const origPromises = { open: fs.promises.open };
 
 function splitSections(raw) {
@@ -240,5 +240,9 @@ Module.syncBuiltinESMExports();
 
 process.on('exit', () => {
   if (!OUT) return;
-  orig.writeFileSync.call(fs, OUT, JSON.stringify({ entry: norm(process.argv[1] || ''), args: process.argv.slice(2), events }, null, 2));
+  // Not orig.writeFileSync: in newer Node (22.23 and 18) it opens the file through fs.openSync, which is
+  // the hooked one, so the record itself went to the null device and was lost.
+  const fd = orig.openSync.call(fs, OUT, 'w');
+  try { orig.writeSync.call(fs, fd, JSON.stringify({ entry: norm(process.argv[1] || ''), args: process.argv.slice(2), events }, null, 2)); }
+  finally { orig.closeSync.call(fs, fd); }
 });
