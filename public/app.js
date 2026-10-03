@@ -43,6 +43,7 @@ function drawMark(g, node) {
   if (node.origin) el('path', { d: 'M-22,-5 L-16,0 L-22,5', class: 'origin-tick' }, g);
   // A dead end gets a short wall on the side the data would leave from.
   if (node.deadEnd) el('path', { d: 'M15,-6 L15,6', class: 'deadend-tick' }, g);
+  else if (node.intendedEnd) el('path', { d: 'M15,-6 L15,6', class: 'deadend-tick intended' }, g);
 }
 
 function render() {
@@ -255,6 +256,16 @@ function renderLoops() {
   const here = graph.nodes.filter(n => n.deadEnd && (n.flows || []).includes(current)).map(n => n.label);
   ends.hidden = here.length === 0;
   ends.textContent = here.length ? t('deadEnds', { list: here.join(LANG === 'ja' ? '、' : ', ') }) : '';
+  // Ends the user declared as meant to stay unread are listed quietly; one that is read again is a warning.
+  const sep = LANG === 'ja' ? '、' : ', ';
+  const meant = document.getElementById('intended-ends');
+  const kept = graph.nodes.filter(n => n.intendedEnd && (n.flows || []).includes(current)).map(n => (LANG === 'ja' ? `${n.label}（${n.intendedEnd}）` : `${n.label} (${n.intendedEnd})`));
+  meant.hidden = kept.length === 0;
+  meant.textContent = kept.length ? t('intendedEnds', { list: kept.join(sep) }) : '';
+  const stale = document.getElementById('stale-ends');
+  const gone = (graph.staleEnds || []).filter(s => s.startsWith(`${current}: `)).map(s => s.slice(current.length + 2));
+  stale.hidden = gone.length === 0;
+  stale.textContent = gone.length ? t('staleEnds', { list: gone.join(sep) }) : '';
 }
 
 function evidenceText(ev) {
@@ -277,7 +288,7 @@ function renderDetail() {
   if (!n) return;
   const h = document.createElement('h3'); h.textContent = n.label; box.appendChild(h);
   const k = document.createElement('p'); k.className = 'kind';
-  k.textContent = (n.kind === 'step' ? t('stepOf', { actor: n.actor }) : t(`kind_${n.kind}`)) + ((n.originIn || []).includes(current) ? t('originSuffix') : '') + (n.deadEnd ? t('deadEndSuffix') : '');
+  k.textContent = (n.kind === 'step' ? t('stepOf', { actor: n.actor }) : t(`kind_${n.kind}`)) + ((n.originIn || []).includes(current) ? t('originSuffix') : '') + (n.deadEnd ? t('deadEndSuffix') : '') + (n.intendedEnd ? t('intendedEndSuffix', { why: n.intendedEnd }) : '');
   box.appendChild(k);
   const dl = document.createElement('dl');
   const add = (term, values) => {

@@ -83,6 +83,7 @@ test('flows.json: reads the same as the equivalent ```flow block', () => {
     'group State: scripts/seen.json, scripts/feeds.json',
     'loop Seen once: scripts/fetch.js, scripts/seen.json',
     'loop Reading becomes ideas (contains): notes/{date}.md, [me] Pick',
+    'end Old items kept for reference: notes/archive/',
     '```', '',
   ].join('\n');
   const json = { flows: [{
@@ -94,6 +95,7 @@ test('flows.json: reads the same as the equivalent ```flow block', () => {
       { name: 'Seen once', nodes: ['scripts/fetch.js', 'scripts/seen.json'] },
       { name: 'Reading becomes ideas', nodes: ['notes/{date}.md', '[me] Pick'], contains: true },
     ],
+    ends: [{ name: 'Old items kept for reference', nodes: ['notes/archive/'] }],
   }] };
   const a = workspace({ 'loopfinder/config.json': '{"declarations":["flows.md"]}', 'flows.md': block });
   const b = workspace({ 'loopfinder/config.json': '{}', 'loopfinder/flows.json': JSON.stringify(json) });
@@ -101,7 +103,7 @@ test('flows.json: reads the same as the equivalent ```flow block', () => {
   const strip = ({ source, about, ...f }) => f;
   const [fa] = read(a);
   const [fb] = read(b);
-  assert.ok(fa.declared.length && fa.loops.length && fa.groups.length && fa.traces.length, 'the block itself was read');
+  assert.ok(fa.declared.length && fa.loops.length && fa.groups.length && fa.traces.length && fa.ends.length, 'the block itself was read');
   assert.deepStrictEqual(strip(fb), strip(fa));
   assert.strictEqual(fb.about, 'one line');
   assert.strictEqual(fb.source, 'loopfinder/flows.json');
@@ -204,6 +206,25 @@ test('dead ends: written and never read, counted over all flows; sending out is 
   fs.writeFileSync(path.join(dir, 'loopfinder', 'flows.json'), JSON.stringify(flows));
   const alone = build(loadConfig(path.join(dir, 'loopfinder', 'config.json')), { warn: () => {} });
   assert.deepStrictEqual(alone.deadEnds, ['notes/handoff.md']);
+});
+
+test('ends: a declared end is listed apart, and reported once it is read again', () => {
+  const flows = { flows: [
+    { name: 'backup', edges: ['notes/a.md -> [me] Back up -> backups/'], ends: [{ name: 'Backups', nodes: ['backups/'] }] },
+  ] };
+  const dir = workspace({ 'loopfinder/config.json': '{}', 'loopfinder/flows.json': JSON.stringify(flows) });
+  const cfg = path.join(dir, 'loopfinder', 'config.json');
+  const graph = build(loadConfig(cfg), { warn: () => {} });
+  assert.deepStrictEqual(graph.deadEnds, [], 'a declared end is not a finding');
+  assert.deepStrictEqual(graph.intendedEnds.map(d => [d.id, d.name]), [['backups/', 'Backups']]);
+  assert.strictEqual(graph.nodes.find(nd => nd.id === 'backups/').intendedEnd, 'Backups');
+  assert.deepStrictEqual(graph.staleEnds, []);
+  // Someone starts reading the backups: the declaration no longer holds and is reported.
+  flows.flows[0].edges.push('backups/ -> [me] Restore');
+  fs.writeFileSync(path.join(dir, 'loopfinder', 'flows.json'), JSON.stringify(flows));
+  const read = build(loadConfig(cfg), { warn: () => {} });
+  assert.deepStrictEqual(read.intendedEnds, []);
+  assert.deepStrictEqual(read.staleEnds, ['backup: Backups (backups/)']);
 });
 
 function snapshot(dir) {

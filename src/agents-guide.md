@@ -48,8 +48,11 @@ describe are flows. This file is the only one about the survey itself.
    - **Dead end**: a file that something writes and no flow reads. Reading by a person is not
      recorded, so ask the user whether someone reads it. If someone does, declare that reading
      step (with the user's words for it). If nobody does, that is a finding: report it (output
-     nobody collects, a hand-off the other side stopped reading). Do not add a reading edge just
-     to make it go away.
+     nobody collects, a hand-off the other side stopped reading). If the user says it is meant to
+     stay unread (an archive, a backup, private files), add it to `ends` with the user's reason.
+     Do not add a reading edge just to make it go away.
+   - **Declared as an end, but read now or no longer written**: an `ends` entry no longer
+     describes the workspace. Tell the user; remove it only when they agree.
 6. **Report in a few lines**: the flows, the loops, the unnamed loops, the dead ends, and what you
    could not determine (and why).
 
@@ -172,6 +175,7 @@ When the user asks for another survey:
 | `edges` | `A -> B -> C`: data flows from A to B, then to C. |
 | `groups` | Optional. Draw two or more related nodes inside one frame (a script's state files, say). |
 | `loops` | Names for loops the user confirmed. |
+| `ends` | Optional. `{ "name", "nodes" }`: files the user confirmed are meant to stay unread; `name` is their reason ("Backups"). |
 
 ## config.json
 

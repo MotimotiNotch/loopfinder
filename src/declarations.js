@@ -9,6 +9,7 @@
 //   group <name>: A, B                     draw A and B inside one frame
 //   loop <name>: A, B                      the cycle made of exactly these nodes gets this name
 //   loop <name> (contains): A, B           otherwise-unnamed cycles that pass through A and B get this name
+//   end <why>: A, B                        A and B are meant to be written and not read (an archive, a backup)
 //   # comment
 //   ```
 'use strict';
@@ -54,7 +55,7 @@ function expandGlobs(root, globs, ignore) {
 
 // The body of one flow, as lines (a ```flow block, or flows.json turned into the same lines).
 function parseFlowLines(name, source, lines, nodes) {
-  const flow = { name, source, traces: [], declared: [], groups: [], loops: [], start: [], sections: [] };
+  const flow = { name, source, traces: [], declared: [], groups: [], loops: [], ends: [], start: [], sections: [] };
   for (const raw of lines) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;
@@ -66,11 +67,12 @@ function parseFlowLines(name, source, lines, nodes) {
       flow.traces.push(line.slice(6).trim().split(/\s+/));
       continue;
     }
-    const named = /^(group|loop)\s+([^:]+):\s*(.+)$/.exec(line);
+    const named = /^(group|loop|end)\s+([^:]+):\s*(.+)$/.exec(line);
     if (named) {
       const refs = named[3].split(',').map(s => s.trim()).filter(Boolean);
       const label = named[2].trim();
       if (named[1] === 'group') flow.groups.push({ name: label, refs });
+      else if (named[1] === 'end') flow.ends.push({ name: label, refs });
       else flow.loops.push({ name: label.replace(CONTAINS, ''), contains: CONTAINS.test(label), refs });
       continue;
     }
@@ -121,6 +123,7 @@ function flowsJsonToLines(f, at) {
   }
   for (const g of refs(f.groups, 'groups', 'nodes')) lines.push(`group ${g.name}: ${g.nodes.join(', ')}`);
   for (const l of refs(f.loops, 'loops', 'nodes')) lines.push(`loop ${l.name}${l.contains ? ' (contains)' : ''}: ${l.nodes.join(', ')}`);
+  for (const e of refs(f.ends, 'ends', 'nodes')) lines.push(`end ${e.name}: ${e.nodes.join(', ')}`);
   return lines;
 }
 

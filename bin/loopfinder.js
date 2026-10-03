@@ -65,6 +65,8 @@ async function cmdBuild() {
   if (unnamed.length) console.log(`! ${unnamed.length} unnamed loop(s): feedback you did not declare. Check whether it is intended.`);
   const ends = graph.deadEnds.map(id => graph.nodes.find(nd => nd.id === id)?.path || id);
   if (ends.length) console.log(`! ${ends.length} dead end(s): written but never read: ${ends.join(', ')}. Ask whether someone reads it.`);
+  for (const d of graph.intendedEnds) console.log(`  meant to stay unread: ${d.name} (${d.id})`);
+  for (const s of graph.staleEnds) console.log(`! declared as an end, but read now or no longer written: ${s}`);
   for (const m of graph.missingLoops) console.log(`! declared but not found: ${m} (a step changed and the loop broke?)`);
   await runChecks(config, graph);
 }

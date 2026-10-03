@@ -115,6 +115,7 @@ guide, [`src/agents-guide.md`](src/agents-guide.md).
 | `note.md#Heading` | A section of a note (used by section hubs) |
 | `groups` | `{ "name", "nodes" }`: draw these in one frame |
 | `loops` | `{ "name", "nodes" }` names the cycle made of exactly these nodes; with `"contains": true`, every otherwise-unnamed cycle through them |
+| `ends` | `{ "name", "nodes" }`: these are meant to be written and not read (an archive, a backup); `name` says why. They are listed apart from dead ends, and reported if they are read again |
 | `start` | Where to start reading the diagram |
 | `about`, `sources` | What the flow is for, and the files it was learned from (for the next survey) |
 
@@ -127,7 +128,7 @@ declared wins.
 
 If you would rather keep a flow next to the routine it describes, the same lines also work as a
 ` ```flow <name> ` block in any file listed in `declarations` (`trace: ...`, `start: ...`, `A -> B`,
-`group <name>: A, B`, `loop <name>: A, B`, `loop <name> (contains): A, B`).
+`group <name>: A, B`, `loop <name>: A, B`, `loop <name> (contains): A, B`, `end <why>: A, B`).
 
 ## Config (`loopfinder/config.json`)
 

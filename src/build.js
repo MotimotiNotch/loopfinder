@@ -79,7 +79,7 @@ function build(config, opts = {}) {
     const keep = new Set();
     traces[fi].forEach(t => t.events.forEach(e => { if (e.kind === 'write') keep.add(n.nodeFromPath(e.target).id); }));
     flow.declared.flat().forEach(r => keep.add(n.nodeFromRef(r).id));
-    [...flow.loops, ...flow.groups].forEach(l => l.refs.forEach(r => keep.add(n.nodeFromRef(r).id)));
+    [...flow.loops, ...flow.groups, ...flow.ends].forEach(l => l.refs.forEach(r => keep.add(n.nodeFromRef(r).id)));
     // Per script, the reads that could be folded, counted over every trace of this flow.
     const loose = new Map();
     for (const t of traces[fi]) for (const e of t.events) {
@@ -155,11 +155,18 @@ function build(config, opts = {}) {
   // what one flow leaves behind may be what another flow reads. Writing to a web service is an
   // intended exit, so only files and repositories count. Reading by a person is not recorded, so a
   // dead end may also be a reading step nobody declared; either way it is worth asking about.
-  const deadEnds = [...nodes.values()]
+  // The user can say a dead end is meant to stay unread (an archive, a backup): it is listed apart,
+  // and reported again once it stops being a dead end, since the declaration then says nothing.
+  const found = [...nodes.values()]
     .filter(nd => (nd.kind === 'file' || nd.kind === 'repo')
       && dataEdges.some(e => e.to === nd.id) && !dataEdges.some(e => e.from === nd.id))
     .map(nd => nd.id);
+  const declaredEnds = flows.flatMap(f => f.ends.flatMap(e => e.refs.map(r => ({ id: n.nodeFromRef(r).id, name: e.name, flow: f.name }))));
+  const deadEnds = found.filter(id => !declaredEnds.some(d => d.id === id));
+  const intendedEnds = declaredEnds.filter(d => found.includes(d.id));
+  const staleEnds = declaredEnds.filter(d => !found.includes(d.id)).map(d => `${d.flow}: ${d.name} (${d.id})`);
   for (const id of deadEnds) nodes.get(id).deadEnd = true;
+  for (const d of intendedEnds) nodes.get(d.id).intendedEnd = d.name;
 
   const hubs = buildHubs(config, { flows, traces, nodes, edges: dataEdges, n });
   const all = [...loops, ...hubs.flatMap(h => h.loops)].map((l, i) => ({ ...l, id: i }));
@@ -176,6 +183,8 @@ function build(config, opts = {}) {
     loops: all,
     missingLoops: [...new Set(missing)],
     deadEnds,
+    intendedEnds,
+    staleEnds,
   };
 }
 
