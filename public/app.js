@@ -11,6 +11,10 @@ let flowPaths = new Map(); // "from\u0000to" -> drawn path d (the track dots mov
 let dotLayer = null;
 let dotsFor;               // which loop the moving dots belong to (picking a node does not redraw them)
 
+// Set by the VS Code extension (vscode/media/host.js): it hands over the graph, sends a new one after
+// every build, and opens a file in the editor. In a browser it is absent and flow.json is fetched.
+const host = window.loopfinderHost || null;
+
 // Dots moving along edges. Away from the picked loop they are faint and sparse, so the screen stays calm.
 const DOT_SPEED = 40;            // px per second
 const DOT_TRAVEL = [1.5, 5];     // seconds to cross one edge (min, max), so long arcs are not always busy
@@ -291,16 +295,24 @@ function renderDetail() {
   k.textContent = (n.kind === 'step' ? t('stepOf', { actor: n.actor }) : t(`kind_${n.kind}`)) + ((n.originIn || []).includes(current) ? t('originSuffix') : '') + (n.deadEnd ? t('deadEndSuffix') : '') + (n.intendedEnd ? t('intendedEndSuffix', { why: n.intendedEnd }) : '');
   box.appendChild(k);
   const dl = document.createElement('dl');
-  const add = (term, values) => {
+  // With a host that can open files, paths become buttons; the host decides whether the path is a file.
+  const value = (parent, v, openable) => {
+    if (!openable || !host?.open) { parent.textContent = v; return; }
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'open-file'; b.textContent = v; b.title = t('openFile');
+    b.addEventListener('click', () => host.open(v));
+    parent.appendChild(b);
+  };
+  const add = (term, values, openable = false) => {
     if (!values || values.length === 0) return;
     const dt = document.createElement('dt'); dt.textContent = term; dl.appendChild(dt);
     const dd = document.createElement('dd');
-    if (values.length === 1) dd.textContent = values[0];
-    else { const ul = document.createElement('ul'); for (const v of values) { const li = document.createElement('li'); li.textContent = v; ul.appendChild(li); } dd.appendChild(ul); }
+    if (values.length === 1) value(dd, values[0], openable);
+    else { const ul = document.createElement('ul'); for (const v of values) { const li = document.createElement('li'); value(li, v, openable); ul.appendChild(li); } dd.appendChild(ul); }
     dl.appendChild(dd);
   };
-  add(t('d_location'), n.path ? [n.path] : null);
-  add(t('d_files'), n.files);
+  add(t('d_location'), n.path ? [n.path] : null, n.kind === 'script' || n.kind === 'file');
+  add(t('d_files'), n.files, true);
   add(t('d_frame'), n.groupBy?.[current] ? [labelOf(n.groupBy[current])] : null);
   // Reads folded into the scan node: only counts per top-level folder are kept.
   add(t('d_folded'), n.foldedBy?.[current] ? Object.entries(n.foldedBy[current]).sort((a, b) => b[1] - a[1]).map(([f, c]) => `${f}  ${t('d_count', { n: c })}`) : null);
@@ -336,14 +348,10 @@ function fillIcons() {
 
 async function main() {
   fillIcons();
-  graph = await (await fetch('flow.json', { cache: 'no-store' })).json();
+  graph = host ? await host.load() : await (await fetch('flow.json', { cache: 'no-store' })).json();
   pickLang(graph.lang);
   const select = document.getElementById('flow');
-  for (const f of graph.flows) {
-    const o = document.createElement('option');
-    o.value = f.name; o.textContent = f.name;
-    select.appendChild(o);
-  }
+  fillFlows(select);
   // #flow=<name> opens that flow
   const fm = /flow=([^&]+)/.exec(location.hash);
   const want = fm && decodeURIComponent(fm[1]);
@@ -354,6 +362,30 @@ async function main() {
   const m = /loop=(\d+)/.exec(location.hash);
   if (m && graph.loops.some(l => l.id === Number(m[1]) && l.flow === current)) selectedLoop = Number(m[1]);
   document.getElementById('lang-toggle').addEventListener('click', () => { setLang(LANG === 'ja' ? 'en' : 'ja'); renderAll(); });
+  host?.onGraph(replaceGraph);
+  renderAll();
+}
+
+function fillFlows(select) {
+  select.textContent = '';
+  for (const f of graph.flows) {
+    const o = document.createElement('option');
+    o.value = f.name; o.textContent = f.name;
+    select.appendChild(o);
+  }
+}
+
+// A rebuilt graph keeps the flow on screen. Loop ids are renumbered by every build, so the picked loop
+// is kept only if a loop with the same name is still there; the picked node is kept if it still exists.
+function replaceGraph(next) {
+  const loopName = graph.loops.find(l => l.id === selectedLoop)?.name;
+  graph = next;
+  const select = document.getElementById('flow');
+  fillFlows(select);
+  if (!graph.flows.some(f => f.name === current)) current = graph.flows[0]?.name;
+  select.value = current;
+  selectedLoop = loopName ? graph.loops.find(l => l.flow === current && l.name === loopName)?.id ?? null : null;
+  if (!graph.nodes.some(n => n.id === selectedNode)) selectedNode = null;
   renderAll();
 }
 
@@ -470,7 +502,8 @@ const zoom = (() => {
 })();
 
 // Theme: auto (follow the system) -> light -> dark -> auto. The choice is kept per browser.
-// Auto removes the attribute, so the CSS media query decides.
+// Auto removes the attribute, so the CSS media query decides. Inside VS Code, auto follows the editor's
+// theme instead, which the media query does not see.
 const themeToggle = (() => {
   const KEY = 'loopfinder:theme';
   const ORDER = ['auto', 'light', 'dark'];
@@ -478,9 +511,11 @@ const themeToggle = (() => {
   let theme = 'auto';
   try { theme = ORDER.includes(localStorage.getItem(KEY)) ? localStorage.getItem(KEY) : 'auto'; } catch { /* storage unavailable */ }
   const apply = () => {
-    if (theme === 'auto') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', theme);
+    const shown = theme === 'auto' ? host?.theme?.() : theme;
+    if (shown) document.documentElement.setAttribute('data-theme', shown);
+    else document.documentElement.removeAttribute('data-theme');
   };
+  host?.onTheme?.(apply);
   const ICON = { auto: 'sun-moon', light: 'sun', dark: 'moon' };
   const refresh = () => {
     const name = t(`theme_${theme}`);

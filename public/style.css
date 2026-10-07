@@ -180,6 +180,12 @@ body {
 .detail dt { color: var(--fg-faint); font-size: 12px; margin-top: 8px; }
 .detail dd { margin: 2px 0 0; color: var(--fg-muted); word-break: break-all; }
 .detail ul { margin: 2px 0 0; padding-left: 16px; }
+.detail .open-file {
+  font: inherit; color: inherit; text-align: left; word-break: break-all;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--fg-faint); text-underline-offset: 2px;
+}
+.detail .open-file:hover { color: var(--fg); }
 
 /* ---- graph ---- */
 .edge { stroke: var(--line-strong); stroke-width: 1.2; fill: none; }
