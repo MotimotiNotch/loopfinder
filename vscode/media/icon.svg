@@ -1,0 +1,10 @@
+<!-- loopfinder's icon: three nodes of different kinds (script, file, a person's step) on one loop.
+     Same voice as the viewer: colourless marks, amber spent only on the loop. Rendered to icon.png by scripts/icon.js. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="24" fill="#121316"/>
+  <circle cx="64" cy="68" r="32" fill="none" stroke="#e0a84a" stroke-width="7"/>
+  <path d="M-6,-7 L3,0 L-6,7" fill="none" stroke="#e0a84a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" transform="translate(91.7,52) rotate(60)"/>
+  <rect x="55" y="27" width="18" height="18" fill="#c3c7cf" stroke="#121316" stroke-width="4"/>
+  <circle cx="91.7" cy="84" r="11" fill="#c3c7cf" stroke="#121316" stroke-width="4"/>
+  <path d="M36.3,71 L49.3,84 L36.3,97 L23.3,84 Z" fill="#c3c7cf" stroke="#121316" stroke-width="4" stroke-linejoin="round"/>
+</svg>
