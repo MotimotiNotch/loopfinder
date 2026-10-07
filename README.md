@@ -82,7 +82,8 @@ The viewer listens on `127.0.0.1` only: the graph lists your file paths. It can 
 
 ### In VS Code
 
-The same CLI and viewer as an extension: [loopfinder on the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=motimotinotch.loopfinder).
+The same CLI and viewer as an extension: [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=motimotinotch.loopfinder) (VS Code) or
+[Open VSX](https://open-vsx.org/extension/motimotinotch/loopfinder) (Cursor, VSCodium and other editors that use it).
 It runs on the editor's own runtime (no Node install), opens the viewer in a tab that redraws after every
 build, and opens a file when you click its path. Set up and build are off until you trust the workspace.
 See [vscode/README.md](vscode/README.md).
