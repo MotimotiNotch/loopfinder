@@ -1,0 +1,3 @@
+scripts/**
+**/*.vsix
+**/__pycache__/**

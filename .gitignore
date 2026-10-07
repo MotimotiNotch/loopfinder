@@ -4,3 +4,7 @@ node_modules/
 # The demo's AGENTS.md is rewritten by every run.
 examples/demo/loopfinder/AGENTS.md
 __pycache__/
+# The VS Code extension's copy of the CLI and the licenses (vscode/scripts/prepare.js), and its packages.
+vscode/core/
+vscode/LICENSE*
+vscode/*.vsix
