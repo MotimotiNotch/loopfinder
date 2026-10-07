@@ -160,7 +160,7 @@ module.exports = ({ config, graph }) => ({
 - [Neoloopy](https://forum.obsidian.md/t/neoloopy-think-in-feedback-loops-a-systems-thinking-tool-in-your-vault/115448) は、手で描いた因果ループ図から強化ループ・均衡ループを見つけます。
 - strace や [monkeyfs](https://pypi.org/project/monkeyfs/) はファイルの入出力を横取りします。loopfinder の Python のフックも、同じモンキーパッチの手法です。
 
-レイアウトは [dagre](https://github.com/dagrejs/dagre)（MIT、`LICENSE-dagre`）。アイコンは [Lucide](https://lucide.dev) の公式 SVG を `scripts/gen-icons.js` で改変せずに取り込んでいます（ISC。`moon` と `info` は Feather 由来で MIT。`LICENSE-lucide`）。
+レイアウトは [dagre](https://github.com/dagrejs/dagre)（MIT、`LICENSE-dagre`）と、それに同梱されている [graphlib](https://github.com/dagrejs/graphlib)（MIT、`LICENSE-graphlib`）。アイコンは [Lucide](https://lucide.dev) の公式 SVG を `scripts/gen-icons.js` で改変せずに取り込んでいます（ISC。`moon` と `info` は Feather 由来で MIT。`LICENSE-lucide`）。
 
 ## 支援について
 

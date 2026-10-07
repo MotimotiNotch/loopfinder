@@ -14,6 +14,7 @@
     "public/",
     "LICENSE",
     "LICENSE-dagre",
+    "LICENSE-graphlib",
     "LICENSE-lucide",
     "README.md",
     "README.ja.md"

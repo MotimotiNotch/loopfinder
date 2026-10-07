@@ -12,7 +12,7 @@ fs.rmSync(core, { recursive: true, force: true });
 for (const name of ['bin', 'src', 'public', 'trace', 'package.json']) {
   fs.cpSync(path.join(repo, name), path.join(core, name), { recursive: true, filter: src => !src.includes('__pycache__') });
 }
-for (const name of ['LICENSE', 'LICENSE-dagre', 'LICENSE-lucide']) {
+for (const name of ['LICENSE', 'LICENSE-dagre', 'LICENSE-graphlib', 'LICENSE-lucide']) {
   fs.copyFileSync(path.join(repo, name), path.join(ext, name));
 }
 

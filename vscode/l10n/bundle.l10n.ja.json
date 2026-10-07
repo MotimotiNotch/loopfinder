@@ -1,0 +1,17 @@
+{
+  "loopfinder: open a folder first.": "loopfinder: 先にフォルダを開いてください。",
+  "Set up": "準備する",
+  "loopfinder: no loopfinder/config.json in this workspace.": "loopfinder: このワークスペースには loopfinder/config.json がありません。",
+  "Which folder?": "どのフォルダで動かしますか？",
+  "loopfinder: trust this workspace first. Building runs its scripts.": "loopfinder: 先にこのワークスペースを信頼してください。ビルドは中のスクリプトを実際に動かします。",
+  "loopfinder: init failed.": "loopfinder: 準備に失敗しました。",
+  "Copy the request": "依頼文をコピー",
+  "loopfinder: set up. Next, ask your AI agent: \"{0}\" It writes loopfinder/flows.json; then build.": "loopfinder: 準備しました。次に AI エージェントに「{0}」と頼んでください。エージェントが loopfinder/flows.json を書いたら、ビルドします。",
+  "loopfinder: copied the request for your AI agent": "loopfinder: AI エージェントへの依頼文をコピーしました",
+  "loopfinder: tracing the scripts and building the graph": "loopfinder: スクリプトを記録して図を組み立てています",
+  "loopfinder: build failed.": "loopfinder: ビルドに失敗しました。",
+  "Show output": "出力を見る",
+  "Build": "ビルド",
+  "loopfinder: no graph yet. Build it first.": "loopfinder: まだ図がありません。先にビルドしてください。",
+  "loopfinder: not a single file: {0}": "loopfinder: 1つのファイルではありません: {0}"
+}

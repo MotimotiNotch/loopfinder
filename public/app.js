@@ -349,7 +349,8 @@ function fillIcons() {
 async function main() {
   fillIcons();
   graph = host ? await host.load() : await (await fetch('flow.json', { cache: 'no-store' })).json();
-  pickLang(graph.lang);
+  // Inside VS Code the editor's display language comes before the config's; a choice made here wins over both.
+  pickLang(host?.lang?.() || graph.lang);
   const select = document.getElementById('flow');
   fillFlows(select);
   // #flow=<name> opens that flow
