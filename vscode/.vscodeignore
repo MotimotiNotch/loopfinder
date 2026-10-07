@@ -1,3 +1,4 @@
 scripts/**
 **/*.vsix
 **/__pycache__/**
+media/icon.svg

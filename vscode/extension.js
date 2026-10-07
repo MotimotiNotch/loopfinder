@@ -17,6 +17,8 @@ const PUBLIC = path.join(CORE, 'public');
 const { loadConfig } = require(path.join(CORE, 'src', 'config'));
 
 const PROMPT = 'Read loopfinder/AGENTS.md and survey this workspace.';
+// Messages go through vscode.l10n (l10n/bundle.l10n.ja.json); the menus through package.nls.*.json.
+const t = (message, ...args) => vscode.l10n.t(message, ...args);
 const configOf = folder => path.join(folder, 'loopfinder', 'config.json');
 
 let output;
@@ -27,16 +29,16 @@ async function pickFolder(needConfig) {
   const folders = (vscode.workspace.workspaceFolders || []).filter(f => f.uri.scheme === 'file');
   const candidates = needConfig ? folders.filter(f => fs.existsSync(configOf(f.uri.fsPath))) : folders;
   if (!candidates.length) {
-    if (!folders.length) vscode.window.showWarningMessage('loopfinder: open a folder first.');
+    if (!folders.length) vscode.window.showWarningMessage(t('loopfinder: open a folder first.'));
     else {
-      const init = 'Set up';
-      const choice = await vscode.window.showWarningMessage('loopfinder: no loopfinder/config.json in this workspace.', ...(vscode.workspace.isTrusted ? [init] : []));
+      const init = t('Set up');
+      const choice = await vscode.window.showWarningMessage(t('loopfinder: no loopfinder/config.json in this workspace.'), ...(vscode.workspace.isTrusted ? [init] : []));
       if (choice === init) vscode.commands.executeCommand('loopfinder.init');
     }
     return null;
   }
   if (candidates.length === 1) return candidates[0].uri.fsPath;
-  const pick = await vscode.window.showQuickPick(candidates.map(f => ({ label: f.name, description: f.uri.fsPath })), { placeHolder: 'Which folder?' });
+  const pick = await vscode.window.showQuickPick(candidates.map(f => ({ label: f.name, description: f.uri.fsPath })), { placeHolder: t('Which folder?') });
   return pick ? pick.description : null;
 }
 
@@ -57,7 +59,7 @@ function runCli(folder, args, token) {
 // `enablement` only greys out the menus; a command run from code still arrives here.
 function trusted() {
   if (vscode.workspace.isTrusted) return true;
-  vscode.window.showWarningMessage('loopfinder: trust this workspace first. Building runs its scripts.');
+  vscode.window.showWarningMessage(t('loopfinder: trust this workspace first. Building runs its scripts.'));
   return false;
 }
 
@@ -66,16 +68,16 @@ async function cmdInit() {
   const folder = await pickFolder(false);
   if (!folder) return;
   const code = await runCli(folder, ['init']);
-  if (code !== 0) { showFailure('init'); return; }
-  const copy = 'Copy the request';
+  if (code !== 0) { showFailure(t('loopfinder: init failed.')); return; }
+  const copy = t('Copy the request');
   const choice = await vscode.window.showInformationMessage(
-    `loopfinder: set up. Next, ask your AI agent: "${PROMPT}" It writes loopfinder/flows.json; then build.`, copy);
+    t('loopfinder: set up. Next, ask your AI agent: "{0}" It writes loopfinder/flows.json; then build.', PROMPT), copy);
   if (choice === copy) cmdCopyPrompt();
 }
 
 function cmdCopyPrompt() {
   vscode.env.clipboard.writeText(PROMPT);
-  vscode.window.setStatusBarMessage('loopfinder: copied the request for your AI agent', 4000);
+  vscode.window.setStatusBarMessage(t('loopfinder: copied the request for your AI agent'), 4000);
 }
 
 async function cmdBuild() {
@@ -87,16 +89,16 @@ async function cmdBuild() {
   if (settings.get('allowNetwork')) args.push('--allow-network');
   if (settings.get('allowSubprocess')) args.push('--allow-subprocess');
   const code = await vscode.window.withProgress(
-    { location: vscode.ProgressLocation.Notification, title: 'loopfinder: tracing the scripts and building the graph', cancellable: true },
+    { location: vscode.ProgressLocation.Notification, title: t('loopfinder: tracing the scripts and building the graph'), cancellable: true },
     (_, token) => runCli(folder, args, token));
-  if (code !== 0) { showFailure('build'); return; }
+  if (code !== 0) { showFailure(t('loopfinder: build failed.')); return; }
   // An open viewer picks the new graph up through its watcher.
   if (!viewer || viewer.folder !== folder) show(folder);
 }
 
-async function showFailure(what) {
-  const open = 'Show output';
-  if (await vscode.window.showErrorMessage(`loopfinder: ${what} failed.`, open) === open) output.show();
+async function showFailure(message) {
+  const open = t('Show output');
+  if (await vscode.window.showErrorMessage(message, open) === open) output.show();
 }
 
 async function cmdShow() {
@@ -111,8 +113,8 @@ function readGraph(config) {
 async function show(folder) {
   const config = loadConfig(configOf(folder));
   if (!fs.existsSync(config.output)) {
-    const build = 'Build';
-    const choice = await vscode.window.showInformationMessage('loopfinder: no graph yet. Build it first.', ...(vscode.workspace.isTrusted ? [build] : []));
+    const build = t('Build');
+    const choice = await vscode.window.showInformationMessage(t('loopfinder: no graph yet. Build it first.'), ...(vscode.workspace.isTrusted ? [build] : []));
     if (choice === build) cmdBuild();
     return;
   }
@@ -128,7 +130,8 @@ async function show(folder) {
   const send = () => {
     const graph = readGraph(config);
     // A half-written file fails to parse; the watcher fires again when the write finishes.
-    if (graph) panel.webview.postMessage({ type: 'graph', graph });
+    // The editor's display language is the viewer's default language (a choice made in the viewer wins).
+    if (graph) panel.webview.postMessage({ type: 'graph', graph, lang: vscode.env.language });
   };
   panel.webview.onDidReceiveMessage(m => {
     if (m?.type === 'ready') send();
@@ -158,7 +161,7 @@ function openPath(config, p) {
   try { stat = fs.statSync(file); } catch { /* not there */ }
   if (stat?.isFile()) vscode.commands.executeCommand('vscode.open', vscode.Uri.file(file), { preview: true, viewColumn: vscode.ViewColumn.Beside });
   else if (stat?.isDirectory()) vscode.commands.executeCommand('revealInExplorer', vscode.Uri.file(file));
-  else vscode.window.showInformationMessage(`loopfinder: not a single file: ${p}`);
+  else vscode.window.showInformationMessage(t('loopfinder: not a single file: {0}', p));
 }
 
 // The viewer's own index.html, with its files served through the webview and a CSP that allows only them.

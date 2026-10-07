@@ -1,7 +1,7 @@
 {
   "name": "loopfinder",
-  "displayName": "loopfinder",
-  "description": "Find the feedback loops in your workspace: trace your scripts with writes blocked, add the human/AI steps, and see every loop, including the ones you never declared.",
+  "displayName": "%displayName%",
+  "description": "%description%",
   "version": "0.1.0",
   "publisher": "motimotinotch",
   "license": "MIT",
@@ -15,10 +15,6 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": [
-    "Visualization",
-    "Other"
-  ],
   "keywords": [
     "feedback-loop",
     "data-flow",
@@ -46,24 +42,24 @@
     "commands": [
       {
         "command": "loopfinder.show",
-        "title": "Show the loops",
+        "title": "%command.show%",
         "category": "loopfinder"
       },
       {
         "command": "loopfinder.build",
-        "title": "Build the graph (runs the traced scripts)",
+        "title": "%command.build%",
         "category": "loopfinder",
         "enablement": "isWorkspaceTrusted"
       },
       {
         "command": "loopfinder.init",
-        "title": "Set up this workspace",
+        "title": "%command.init%",
         "category": "loopfinder",
         "enablement": "isWorkspaceTrusted"
       },
       {
         "command": "loopfinder.copyPrompt",
-        "title": "Copy the request for your AI agent",
+        "title": "%command.copyPrompt%",
         "category": "loopfinder"
       }
     ],
@@ -73,18 +69,18 @@
         "loopfinder.allowNetwork": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Let traced scripts reach the network. It is always recorded; blocked by default, so the script sees an error."
+          "markdownDescription": "%config.allowNetwork%"
         },
         "loopfinder.allowSubprocess": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Let traced scripts start other programs. Blocked by default."
+          "markdownDescription": "%config.allowSubprocess%"
         },
         "loopfinder.layoutBudget": {
           "type": "number",
           "default": 15,
           "minimum": 0,
-          "markdownDescription": "Seconds spent searching each flow's layout during a build."
+          "markdownDescription": "%config.layoutBudget%"
         }
       }
     }
@@ -92,5 +88,11 @@
   "scripts": {
     "prepare-core": "node scripts/prepare.js",
     "package": "node scripts/prepare.js && npx @vscode/vsce package --no-dependencies"
-  }
+  },
+  "icon": "icon.png",
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "l10n": "./l10n"
 }

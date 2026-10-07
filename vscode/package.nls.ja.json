@@ -1,0 +1,11 @@
+{
+  "displayName": "loopfinder",
+  "description": "ワークスペースのフィードバックループを見つける。書き込みを止めてスクリプトを記録し、人と AI の段を足して、宣言していないものも含めてすべての輪を数える。",
+  "command.show": "輪を表示",
+  "command.build": "図をビルド（記録するスクリプトを実際に動かす）",
+  "command.init": "このワークスペースを準備",
+  "command.copyPrompt": "AI エージェントへの依頼文をコピー",
+  "config.allowNetwork": "記録するスクリプトにネットワークへの接続を許す。接続は常に記録される。既定では止めるので、スクリプトにはエラーが返る。",
+  "config.allowSubprocess": "記録するスクリプトにほかのプログラムの起動を許す。既定では止める。",
+  "config.layoutBudget": "ビルドのとき、流れごとに並び順を探す秒数。"
+}

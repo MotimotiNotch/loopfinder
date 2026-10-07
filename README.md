@@ -192,7 +192,7 @@ module.exports = ({ config, graph }) => ({
 - strace and [monkeyfs](https://pypi.org/project/monkeyfs/) intercept file I/O; loopfinder's Python hook
   uses the same monkey-patching approach.
 
-Layout by [dagre](https://github.com/dagrejs/dagre) (MIT, see `LICENSE-dagre`). Icons from [Lucide](https://lucide.dev), vendored unmodified by `scripts/gen-icons.js` (ISC; `moon` and `info` derive from Feather, MIT; see `LICENSE-lucide`).
+Layout by [dagre](https://github.com/dagrejs/dagre) (MIT, see `LICENSE-dagre`), which bundles [graphlib](https://github.com/dagrejs/graphlib) (MIT, see `LICENSE-graphlib`). Icons from [Lucide](https://lucide.dev), vendored unmodified by `scripts/gen-icons.js` (ISC; `moon` and `info` derive from Feather, MIT; see `LICENSE-lucide`).
 
 ## Support
 

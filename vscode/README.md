@@ -1,5 +1,7 @@
 # loopfinder for VS Code
 
+[日本語](https://github.com/MotimotiNotch/loopfinder/blob/main/vscode/README.ja.md)
+
 **Find the feedback loops in your workspace — including the ones you never meant to build.**
 
 The [loopfinder](https://github.com/MotimotiNotch/loopfinder) CLI and viewer, inside the editor. No Node install
@@ -17,6 +19,8 @@ From the Command Palette:
 4. **loopfinder: Show the loops** — opens the viewer. It redraws by itself after every build, from the
    palette or from `loopfinder build` in a terminal. Click a path in the side pane to open the file.
 
+The viewer starts in the editor's display language. Picking a language with the button at the top of the viewer wins over it.
+
 ## Safety
 
 Building **really runs your scripts**. Writes are recorded and dropped; network and subprocesses are blocked
@@ -30,4 +34,4 @@ build are off; you can still view a graph that is already built.
 
 ## Support
 
-[Ko-fi](https://ko-fi.com/motimotinotch) · MIT License · bundles dagre (MIT) and Lucide icons (ISC)
+[Ko-fi](https://ko-fi.com/motimotinotch) · MIT License · bundles dagre and graphlib (MIT) and Lucide icons (ISC)
