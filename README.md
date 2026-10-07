@@ -80,6 +80,13 @@ in version control) and `.loopfinder/` (the build output, which lists your file 
 `AGENTS.md` is rewritten on every run so it follows the installed version; edit it and the edit is lost.
 The viewer listens on `127.0.0.1` only: the graph lists your file paths. It can switch between English and Japanese and between auto (follow the system), light and dark; both choices are remembered by the browser.
 
+### In VS Code
+
+The same CLI and viewer as an extension: [loopfinder on the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=motimotinotch.loopfinder).
+It runs on the editor's own runtime (no Node install), opens the viewer in a tab that redraws after every
+build, and opens a file when you click its path. Set up and build are off until you trust the workspace.
+See [vscode/README.md](vscode/README.md).
+
 ## flows.json
 
 The agent writes it; you read it (and can correct it). The full rules the agent follows are in the
