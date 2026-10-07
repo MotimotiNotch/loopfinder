@@ -63,6 +63,12 @@ loopfinder が置くものは2つのフォルダだけです。`loopfinder/`（�
 `AGENTS.md` は、入っている loopfinder の版に合わせて毎回書き直されます。手で直しても、次の実行で消えます。
 画面は `127.0.0.1` でだけ待ち受けます（グラフにはファイルのパスが並ぶため）。画面では、英語と日本語、配色（自動＝OS に合わせる・ライト・ダーク）を切り替えられ、どちらの選択もブラウザが覚えます。
 
+### VS Code で使う
+
+同じ CLI と画面を拡張機能にしたものがあります: [Visual Studio Marketplace の loopfinder](https://marketplace.visualstudio.com/items?itemName=motimotinotch.loopfinder)。
+エディタに入っている実行環境で動き（Node は不要）、画面はタブで開いてビルドのたびに描き直し、パスを押すとそのファイルが開きます。
+ワークスペースを信頼するまで、準備とビルドは使えません。詳しくは [vscode/README.ja.md](vscode/README.ja.md)。
+
 ## flows.json
 
 書くのはエージェントで、人は読んで、必要なら直します。エージェントが従う規則の全文は、案内書の元 [`src/agents-guide.md`](src/agents-guide.md) にあります。
