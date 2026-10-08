@@ -1,6 +1,6 @@
 {
   "name": "loopfinder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find the feedback loops in your personal workspace: run your scripts with writes blocked, record what they read and write, add the human/AI steps by hand, and see every loop — including the ones you never declared.",
   "license": "MIT",
   "funding": "https://ko-fi.com/motimotinotch",
