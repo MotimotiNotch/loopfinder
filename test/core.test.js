@@ -274,3 +274,23 @@ test('demo: builds the expected loops and leaves the workspace untouched', () =>
   const feedNode = graph.nodes.find(n => n.id === 'web:Garden feed');
   assert.ok(feedNode, 'the blocked fetch is still recorded and labelled');
 });
+
+test('build: a Python that cannot start is named, and an old record is not used in its place', () => {
+  const src = path.join(__dirname, '..', 'examples', 'demo');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'loopfinder-nopy-'));
+  fs.cpSync(src, dir, { recursive: true });
+  const cfgFile = path.join(dir, 'loopfinder', 'config.json');
+  const cfg = JSON.parse(fs.readFileSync(cfgFile, 'utf8'));
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'lf-nopy-out-'));
+  cfg.output = path.join(out, 'flow.json');
+  cfg.cache = path.join(out, 'traces');
+  cfg.python = 'loopfinder-no-such-python';
+  fs.writeFileSync(cfgFile, JSON.stringify(cfg));
+  // A record from an earlier build, as if Python had been there last time.
+  fs.mkdirSync(cfg.cache, { recursive: true });
+  const stale = path.join(cfg.cache, 'reading__weekly_summary.py.json');
+  fs.writeFileSync(stale, JSON.stringify({ reads: [], writes: [], network: [], subprocess: [] }));
+  assert.throws(() => build(loadConfig(cfgFile), { warn: () => {} }),
+    e => /could not start Python/.test(e.message) && e.message.includes('loopfinder-no-such-python'));
+  assert.ok(!fs.existsSync(stale), 'the old record was left to pass for this run');
+});

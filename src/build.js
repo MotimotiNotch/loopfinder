@@ -33,9 +33,18 @@ function runTrace(config, flowName, args, opts) {
       LOOPFINDER_ALLOW_NETWORK: opts.allowNetwork ? '1' : '',
       LOOPFINDER_ALLOW_SUBPROCESS: opts.allowSubprocess ? '1' : '',
     };
+    // A record left by an earlier build must not pass for this run's: if the script fails to start,
+    // the old record would be used as if it were new, and declared loops would look broken.
+    fs.rmSync(cache, { force: true });
     const r = spawnSync(py ? config.python : process.execPath,
       py ? [TRACE_PY, script, ...args.slice(1)] : ['-r', TRACE_JS, script, ...args.slice(1)],
       { cwd: config.root, env, encoding: 'utf8', timeout: opts.timeout || 600000 });
+    // Windows ships a `python` that only points to the Microsoft Store (exit 9009), so a missing
+    // interpreter shows up either as a spawn error or as that message.
+    if (py && !fs.existsSync(cache) && (r.error?.code === 'ENOENT' || r.status === 9009 || /Python was not found/.test(r.stderr || ''))) {
+      throw new Error(`could not start Python to trace ${args[0]} ("python": ${JSON.stringify(config.python)} in the config).\n`
+        + 'Install Python 3, or set "python" in loopfinder/config.json to the interpreter (for example "py" or a full path).');
+    }
     if (!fs.existsSync(cache)) {
       throw new Error(`trace did not finish: ${args.join(' ')} (exit ${r.status})\n${(r.stderr || '').slice(-2000)}`);
     }
