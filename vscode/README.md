@@ -18,7 +18,8 @@ It takes the folder to its next step:
   - **Another AI agent** — copies the request for you to paste.
   - **No AI** — opens `loopfinder/flows.json` next to the guide, to write the flows yourself.
 - When the agent has written `loopfinder/flows.json`, loopfinder asks once: **Build and show**. Nothing runs before you click,
-  because building runs the workspace's scripts.
+  because building runs the workspace's scripts. The question folds into the notification centre after a few seconds;
+  until you build, the status bar reads **loopfinder: Build the graph**.
 - After that, the same command (or the status bar) shows the loops, or builds again if the flows changed.
 
 The steps one by one, from the Command Palette:
@@ -32,6 +33,9 @@ The steps one by one, from the Command Palette:
    palette or from `loopfinder build` in a terminal. Click a path in the side pane to open the file.
 
 The viewer starts in the editor's display language. Picking a language with the button at the top of the viewer wins over it.
+
+With three or more flows, the viewer's flow list starts with **Overview (connections)**: every flow on one 3D graph, to see where
+flows meet. Drag to rotate, scroll to zoom, and pick a flow or a file to light it up.
 
 ## Safety
 
