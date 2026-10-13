@@ -226,3 +226,12 @@ body {
 .flow-dot { pointer-events: none; }
 .flow-dot.ambient { fill: var(--fg-muted); fill-opacity: 0.55; }
 .flow-dot.loop { fill: var(--loop); }
+
+/* The overview: names only on knots (nodes two or more flows pass through); the rest appear when lit or picked.
+   Drag rotates, so the browser's touch scrolling is turned off on it. */
+.overview { display: block; touch-action: none; cursor: grab; }
+.overview.rotating, .overview.rotating .node { cursor: grabbing; }
+.overview .edge { stroke-width: 1; }
+.overview .node:not(.labeled):not(.in-loop):not(.selected) text { display: none; }
+/* When more than 40 nodes light up, only knots keep their names. */
+.overview.many .node:not(.labeled):not(.selected) text { display: none; }
