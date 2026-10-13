@@ -31,5 +31,7 @@
   "loopfinder: ask your AI agent to write the flows": "loopfinder: AI エージェントに流れを書いてもらう",
   "loopfinder: the flows changed. Build the graph": "loopfinder: 流れが変わりました。図をビルドする",
   "loopfinder: show the loops": "loopfinder: 輪を表示",
-  "loopfinder: set up this workspace": "loopfinder: このワークスペースを準備する"
+  "loopfinder: set up this workspace": "loopfinder: このワークスペースを準備する",
+  "Manage Workspace Trust": "ワークスペースの信頼を管理",
+  "Build the graph": "図をビルド"
 }

@@ -9,16 +9,20 @@ const Module = require('module');
 
 // A minimal vscode: only what the code under test touches. Messages are recorded, not shown.
 const shown = [];
+const warned = [];
+const ran = [];
+let warningChoice;
 let chatModels = [];
 const fake = {
   l10n: { t: (m, ...a) => m.replace(/\{(\d+)\}/g, (_, i) => a[i]) },
   workspace: { isTrusted: true, workspaceFolders: [], getConfiguration: () => ({ get: (_, d) => d }) },
   window: {
     showInformationMessage: async (m, ...buttons) => { shown.push({ m, buttons }); return undefined; },
-    showWarningMessage: async () => undefined,
+    showWarningMessage: async (m, ...buttons) => { warned.push({ m, buttons }); return warningChoice; },
     setStatusBarMessage: () => {},
   },
   lm: { selectChatModels: async () => chatModels },
+  commands: { executeCommand: async (id) => { ran.push(id); } },
   Uri: { file: p => ({ fsPath: p }) },
 };
 const resolve = Module._resolveFilename;
@@ -110,20 +114,28 @@ test('vscode start: several saves of the flows make one offer to build, and none
   assert.deepStrictEqual(shown[0].buttons, ['Build and show']);
 });
 
-test('vscode start: in an untrusted workspace the offer has no build button', async () => {
+test('vscode start: in an untrusted workspace the offer has no build button, only a way to the trust screen', async () => {
   const dir = workspace();
   const flows = path.join(dir, 'loopfinder', 'flows.json');
   write(path.join(dir, 'loopfinder', 'config.json'), '{}\n');
   write(flows, '{ "flows": [{ "name": "a" }] }\n');
   shown.length = 0;
+  warned.length = 0;
+  ran.length = 0;
   fake.workspace.isTrusted = false;
+  warningChoice = 'Manage Workspace Trust';
   try {
     ext.onFlowsWritten({ fsPath: flows });
     await new Promise(r => setTimeout(r, 1700));
-    assert.strictEqual(shown.length, 1);
-    assert.deepStrictEqual(shown[0].buttons, []);
-    assert.match(shown[0].m, /Trust this workspace/);
+    assert.strictEqual(shown.length, 0);
+    assert.strictEqual(warned.length, 1);
+    assert.match(warned[0].m, /Trust this workspace/);
+    assert.deepStrictEqual(warned[0].buttons, ['Manage Workspace Trust']);
+    // The button opens VS Code's own trust screen; nothing is trusted from here
+    assert.deepStrictEqual(ran, ['workbench.trust.manage']);
+    assert.strictEqual(fake.workspace.isTrusted, false);
   } finally {
     fake.workspace.isTrusted = true;
+    warningChoice = undefined;
   }
 });

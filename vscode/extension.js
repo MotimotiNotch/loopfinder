@@ -59,8 +59,16 @@ function runCli(folder, args, token) {
 // `enablement` only greys out the menus; a command run from code still arrives here.
 function trusted() {
   if (vscode.workspace.isTrusted) return true;
-  vscode.window.showWarningMessage(t('loopfinder: trust this workspace first. Building runs its scripts.'));
+  offerTrust(t('loopfinder: trust this workspace first. Building runs its scripts.'));
   return false;
+}
+
+// Trust is VS Code's own screen; the button only opens it, the choice stays there.
+async function offerTrust(message) {
+  const manage = t('Manage Workspace Trust');
+  if (await vscode.window.showWarningMessage(message, manage) === manage) {
+    await vscode.commands.executeCommand('workbench.trust.manage');
+  }
 }
 
 async function cmdInit() {
@@ -206,10 +214,14 @@ function onFlowsWritten(uri) {
     offering.add(folder);
     try {
       const build = t('Build and show');
-      const message = vscode.workspace.isTrusted
-        ? t('loopfinder: the flows were written ({0}). Build the graph and show it? Building runs the traced scripts.', flowCount(folder))
-        : t('loopfinder: the flows were written ({0}). Trust this workspace to build the graph.', flowCount(folder));
-      const choice = await vscode.window.showInformationMessage(message, ...(vscode.workspace.isTrusted ? [build] : []));
+      if (!vscode.workspace.isTrusted) {
+        await offerTrust(t('loopfinder: the flows were written ({0}). Trust this workspace to build the graph.', flowCount(folder)));
+        return;
+      }
+      // The toast folds away after a few seconds and the agent may take minutes, so the status bar
+      // keeps saying "build" (see refreshStatus) until the graph is newer than flows.json.
+      const message = t('loopfinder: the flows were written ({0}). Build the graph and show it? Building runs the traced scripts.', flowCount(folder));
+      const choice = await vscode.window.showInformationMessage(message, build);
       if (choice === build) await buildFolder(folder);
     } finally {
       offering.delete(folder);
@@ -227,7 +239,8 @@ function refreshStatus() {
   const stage = stageOf(folder);
   const look = {
     ask: ['$(sparkle) loopfinder', t('loopfinder: ask your AI agent to write the flows')],
-    build: ['$(play) loopfinder', t('loopfinder: the flows changed. Build the graph')],
+    // Spelled out, not just the icon: the offer toast folds away, this stays until the graph is built
+    build: [`$(play) loopfinder: ${t('Build the graph')}`, t('loopfinder: the flows changed. Build the graph')],
     show: ['$(type-hierarchy) loopfinder', t('loopfinder: show the loops')],
   }[stage] || ['$(type-hierarchy) loopfinder', t('loopfinder: set up this workspace')];
   status.text = look[0];
