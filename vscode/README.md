@@ -9,7 +9,19 @@ needed: it runs on the editor's own runtime (Python is needed only to trace `.py
 
 ## Use
 
-From the Command Palette:
+Run **loopfinder: Get started** from the Command Palette, or click **loopfinder** in the status bar once it is set up.
+It takes the folder to its next step:
+
+- Not set up yet: makes `loopfinder/`, then asks who should survey the workspace:
+  - **VS Code chat (agent mode)** — opens the chat with the request filled in; you send it. Shown when the editor has a chat model.
+  - **Claude Code in a terminal** — starts `claude` with the request in a new terminal. Shown when `claude` is on your PATH.
+  - **Another AI agent** — copies the request for you to paste.
+  - **No AI** — opens `loopfinder/flows.json` next to the guide, to write the flows yourself.
+- When the agent has written `loopfinder/flows.json`, loopfinder asks once: **Build and show**. Nothing runs before you click,
+  because building runs the workspace's scripts.
+- After that, the same command (or the status bar) shows the loops, or builds again if the flows changed.
+
+The steps one by one, from the Command Palette:
 
 1. **loopfinder: Set up this workspace** — makes `loopfinder/` (config.json, flows.json, AGENTS.md).
 2. Ask your AI agent (Claude Code, Codex, Cursor, Copilot, ...):

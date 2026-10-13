@@ -1,6 +1,7 @@
 {
   "displayName": "loopfinder",
   "description": "Find the feedback loops in your workspace: trace your scripts with writes blocked, add the human/AI steps, and see every loop, including the ones you never declared.",
+  "command.start": "Get started (next step: set up, ask your AI agent, build, or show)",
   "command.show": "Show the loops",
   "command.build": "Build the graph (runs the traced scripts)",
   "command.init": "Set up this workspace",
