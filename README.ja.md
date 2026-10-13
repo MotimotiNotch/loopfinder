@@ -68,6 +68,7 @@ loopfinder が置くものは2つのフォルダだけです。`loopfinder/`（�
 同じ CLI と画面を拡張機能にしたものがあります: [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=motimotinotch.loopfinder)（VS Code）と
 [Open VSX](https://open-vsx.org/extension/motimotinotch/loopfinder)（Cursor・VSCodium など、こちらを使うエディタ）。
 エディタに入っている実行環境で動き（Node は不要）、画面はタブで開いてビルドのたびに描き直し、パスを押すとそのファイルが開きます。
+**loopfinder: はじめる** を選ぶと、準備・AI エージェントへの依頼・ビルド・表示のうち次の一歩に進み、エージェントが流れを書き終えたらビルドするかを尋ねます。
 ワークスペースを信頼するまで、準備とビルドは使えません。詳しくは [vscode/README.ja.md](vscode/README.ja.md)。
 
 ## flows.json

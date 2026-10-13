@@ -69,6 +69,7 @@ async function cmdInit() {
   if (!folder) return;
   const code = await runCli(folder, ['init']);
   if (code !== 0) { showFailure(t('loopfinder: init failed.')); return; }
+  refreshStatus();
   const copy = t('Copy the request');
   const choice = await vscode.window.showInformationMessage(
     t('loopfinder: set up. Next, ask your AI agent: "{0}" It writes loopfinder/flows.json; then build.', PROMPT), copy);
@@ -83,7 +84,11 @@ function cmdCopyPrompt() {
 async function cmdBuild() {
   if (!trusted()) return;
   const folder = await pickFolder(true);
-  if (!folder) return;
+  if (folder) buildFolder(folder);
+}
+
+async function buildFolder(folder) {
+  if (!trusted()) return;
   const settings = vscode.workspace.getConfiguration('loopfinder', vscode.Uri.file(folder));
   const args = ['build', '--config', configOf(folder), '--budget', String(settings.get('layoutBudget', 15))];
   if (settings.get('allowNetwork')) args.push('--allow-network');
@@ -91,9 +96,143 @@ async function cmdBuild() {
   const code = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: t('loopfinder: tracing the scripts and building the graph'), cancellable: true },
     (_, token) => runCli(folder, args, token));
+  refreshStatus();
   if (code !== 0) { showFailure(t('loopfinder: build failed.')); return; }
   // An open viewer picks the new graph up through its watcher.
   if (!viewer || viewer.folder !== folder) show(folder);
+}
+
+// --- Getting started: one command to the request, then one click once the agent has written the flows ---
+// loopfinder has no AI of its own. "Get started" takes a folder to its next step: set up, hand the request
+// to whichever agent the person uses, build, or show. Building still waits for a click, because it really
+// runs the workspace's scripts.
+
+const flowsOf = folder => path.join(folder, 'loopfinder', 'flows.json');
+const mtimeOf = file => { try { return fs.statSync(file).mtimeMs; } catch { return 0; } };
+
+function flowCount(folder) {
+  try {
+    const data = JSON.parse(fs.readFileSync(flowsOf(folder), 'utf8'));
+    return Array.isArray(data.flows) ? data.flows.length : 0;
+  } catch { return 0; }
+}
+
+// setup: no loopfinder/ / ask: no flows yet / build: the flows are newer than the graph / show: up to date
+function stageOf(folder) {
+  if (!fs.existsSync(configOf(folder))) return 'setup';
+  if (flowCount(folder) === 0) return 'ask';
+  let graph;
+  try { graph = loadConfig(configOf(folder)).output; } catch { return 'build'; }
+  return mtimeOf(graph) >= mtimeOf(flowsOf(folder)) ? 'show' : 'build';
+}
+
+function onPath(name) {
+  const exts = process.platform === 'win32' ? ['.exe', '.cmd', '.bat', ''] : [''];
+  for (const dir of (process.env.PATH || '').split(path.delimiter)) {
+    if (dir && exts.some(ext => fs.existsSync(path.join(dir, name + ext)))) return true;
+  }
+  return false;
+}
+
+// The agents this editor can reach, the one picked last time first.
+async function agentChoices(state) {
+  const items = [];
+  let chat = false;
+  try { chat = ((await vscode.lm?.selectChatModels?.()) || []).length > 0; } catch { /* no chat models */ }
+  if (chat) items.push({ id: 'chat', label: t('VS Code chat (agent mode)'), detail: t('Opens the chat with the request filled in. Send it to start.') });
+  if (onPath('claude')) items.push({ id: 'claude', label: t('Claude Code in a terminal'), detail: t('Starts claude in a new terminal with the request.') });
+  items.push({ id: 'copy', label: t('Another AI agent'), detail: t('Copies the request. Paste it to your agent.') });
+  items.push({ id: 'manual', label: t('No AI: write the flows yourself'), detail: t('Opens loopfinder/flows.json next to the guide (loopfinder/AGENTS.md).') });
+  const last = state.get('loopfinder.agent');
+  return items.sort((a, b) => (b.id === last) - (a.id === last));
+}
+
+async function askAgent(folder, state) {
+  const pick = await vscode.window.showQuickPick(await agentChoices(state), {
+    placeHolder: t('Who surveys this workspace and writes the flows?'),
+  });
+  if (!pick) return;
+  state.update('loopfinder.agent', pick.id);
+  const after = t('loopfinder: when loopfinder/flows.json has flows, loopfinder offers to build. Nothing runs before you click.');
+  if (pick.id === 'chat') {
+    try {
+      await vscode.commands.executeCommand('workbench.action.chat.open', { query: PROMPT, isPartialQuery: true, mode: 'agent' });
+      vscode.window.showInformationMessage(after);
+      return;
+    } catch { /* an older editor, or chat turned off: fall back to the clipboard */ }
+  }
+  if (pick.id === 'claude') {
+    const term = vscode.window.createTerminal({ name: 'loopfinder: Claude Code', cwd: folder });
+    term.show();
+    term.sendText(`claude "${PROMPT}"`);
+    vscode.window.showInformationMessage(after);
+    return;
+  }
+  if (pick.id === 'manual') {
+    await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(path.join(folder, 'loopfinder', 'AGENTS.md')), { viewColumn: vscode.ViewColumn.Beside, preview: true });
+    await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(flowsOf(folder)), { viewColumn: vscode.ViewColumn.Active });
+    return;
+  }
+  vscode.env.clipboard.writeText(PROMPT);
+  vscode.window.showInformationMessage(t('loopfinder: copied the request: "{0}" Paste it to your AI agent.', PROMPT) + ' ' + after);
+}
+
+async function cmdStart(state) {
+  const folder = await pickFolder(false);
+  if (!folder) return;
+  let stage = stageOf(folder);
+  if (stage === 'setup') {
+    if (!trusted()) return;
+    if (await runCli(folder, ['init']) !== 0) { showFailure(t('loopfinder: init failed.')); return; }
+    refreshStatus();
+    stage = 'ask';
+  }
+  if (stage === 'ask') return askAgent(folder, state);
+  if (stage === 'build') return buildFolder(folder);
+  return show(folder);
+}
+
+// The agent writes loopfinder/flows.json, often in several saves. Once it settles with flows in it,
+// offer the build once. A save while the offer is still up is folded into it.
+const offering = new Set();
+const settleTimers = new Map();
+
+function onFlowsWritten(uri) {
+  const folder = path.dirname(path.dirname(uri.fsPath));
+  clearTimeout(settleTimers.get(folder));
+  settleTimers.set(folder, setTimeout(async () => {
+    refreshStatus();
+    if (offering.has(folder) || stageOf(folder) !== 'build') return;
+    offering.add(folder);
+    try {
+      const build = t('Build and show');
+      const message = vscode.workspace.isTrusted
+        ? t('loopfinder: the flows were written ({0}). Build the graph and show it? Building runs the traced scripts.', flowCount(folder))
+        : t('loopfinder: the flows were written ({0}). Trust this workspace to build the graph.', flowCount(folder));
+      const choice = await vscode.window.showInformationMessage(message, ...(vscode.workspace.isTrusted ? [build] : []));
+      if (choice === build) await buildFolder(folder);
+    } finally {
+      offering.delete(folder);
+    }
+  }, 1500));
+}
+
+// The status bar shows the next step for the first folder that has loopfinder/, and takes it on click.
+let status;
+function refreshStatus() {
+  if (!status) return;
+  const folders = (vscode.workspace.workspaceFolders || []).filter(f => f.uri.scheme === 'file').map(f => f.uri.fsPath);
+  const folder = viewer?.folder || folders.find(f => fs.existsSync(configOf(f)));
+  if (!folder) { status.hide(); return; }
+  const stage = stageOf(folder);
+  const look = {
+    ask: ['$(sparkle) loopfinder', t('loopfinder: ask your AI agent to write the flows')],
+    build: ['$(play) loopfinder', t('loopfinder: the flows changed. Build the graph')],
+    show: ['$(type-hierarchy) loopfinder', t('loopfinder: show the loops')],
+  }[stage] || ['$(type-hierarchy) loopfinder', t('loopfinder: set up this workspace')];
+  status.text = look[0];
+  status.tooltip = look[1];
+  status.show();
 }
 
 async function showFailure(message) {
@@ -146,10 +285,12 @@ async function show(folder) {
   watcher.onDidCreate(later);
 
   viewer = { panel, folder, config, watcher };
+  refreshStatus();
   panel.onDidDispose(() => {
     watcher.dispose();
     clearTimeout(timer);
     if (viewer?.panel === panel) viewer = null;
+    refreshStatus();
   });
 }
 
@@ -184,16 +325,32 @@ function viewerHtml(webview) {
 
 function activate(context) {
   output = vscode.window.createOutputChannel('loopfinder');
+  status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
+  status.command = 'loopfinder.start';
+  const flowsWatcher = vscode.workspace.createFileSystemWatcher('**/loopfinder/flows.json');
+  flowsWatcher.onDidCreate(onFlowsWritten);
+  flowsWatcher.onDidChange(onFlowsWritten);
+  const configWatcher = vscode.workspace.createFileSystemWatcher('**/loopfinder/config.json');
+  configWatcher.onDidCreate(refreshStatus);
+  configWatcher.onDidDelete(refreshStatus);
   context.subscriptions.push(
     output,
+    status,
+    flowsWatcher,
+    configWatcher,
+    vscode.workspace.onDidChangeWorkspaceFolders(refreshStatus),
+    vscode.workspace.onDidGrantWorkspaceTrust(refreshStatus),
+    vscode.commands.registerCommand('loopfinder.start', () => cmdStart(context.workspaceState)),
     vscode.commands.registerCommand('loopfinder.show', cmdShow),
     vscode.commands.registerCommand('loopfinder.build', cmdBuild),
     vscode.commands.registerCommand('loopfinder.init', cmdInit),
     vscode.commands.registerCommand('loopfinder.copyPrompt', cmdCopyPrompt),
     { dispose: () => viewer?.panel.dispose() },
+    { dispose: () => settleTimers.forEach(clearTimeout) },
   );
+  refreshStatus();
 }
 
 function deactivate() {}
 
-module.exports = { activate, deactivate, viewerHtml, openPath };
+module.exports = { activate, deactivate, viewerHtml, openPath, stageOf, flowCount, onPath, agentChoices, onFlowsWritten };
