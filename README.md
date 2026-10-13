@@ -79,6 +79,7 @@ Everything loopfinder keeps is in two folders: `loopfinder/` (the flows and the 
 in version control) and `.loopfinder/` (the build output, which lists your file paths — keep it out).
 `AGENTS.md` is rewritten on every run so it follows the installed version; edit it and the edit is lost.
 The viewer listens on `127.0.0.1` only: the graph lists your file paths. It can switch between English and Japanese and between auto (follow the system), light and dark; both choices are remembered by the browser.
+With three or more flows, the flow list starts with **Overview (connections)**: every flow on one 3D graph, the same file once, to see where flows meet. Drag to rotate, scroll to zoom, and pick a flow or a file to light it up. `#overview` in the address opens it directly.
 
 ### In VS Code
 
