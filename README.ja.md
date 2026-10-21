@@ -30,7 +30,7 @@ loopfinder はその系を描き、中にある輪をすべて並べます。
 
 ## はじめかた
 
-Node 18 以上（Python のスクリプトを記録するなら Python 3 も）。依存パッケージはありません。
+Node 22 以上（Python のスクリプトを記録するなら Python 3 も）。依存パッケージはありません。
 
 ```sh
 git clone https://github.com/MotimotiNotch/loopfinder

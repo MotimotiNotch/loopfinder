@@ -44,7 +44,7 @@ byte-for-byte unchanged — and, as a control, that the same scripts do change i
 
 ## Quick start
 
-Requires Node 18+ (and Python 3 if you trace Python scripts). No dependencies.
+Requires Node 22+ (and Python 3 if you trace Python scripts). No dependencies.
 
 ```sh
 git clone https://github.com/MotimotiNotch/loopfinder
