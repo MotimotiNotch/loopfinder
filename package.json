@@ -24,7 +24,7 @@
     "demo": "node bin/loopfinder.js build --config examples/demo/loopfinder/config.json && node bin/loopfinder.js serve --config examples/demo/loopfinder/config.json"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "keywords": [
     "feedback-loop",
