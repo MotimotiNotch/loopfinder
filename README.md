@@ -209,7 +209,7 @@ Layout by [dagre](https://github.com/dagrejs/dagre) (MIT, see `LICENSE-dagre`), 
 
 Published on GitHub (MIT). CI is `test.yml` (Ubuntu and Windows × Node 18 and 22). Not published to npm.
 
-- The VS Code extension lives in `vscode/`. It is not on the Marketplace or Open VSX yet.
+- The VS Code extension lives in `vscode/` and is published to the Visual Studio Marketplace and Open VSX (see "In VS Code" above).
 
 ## Support
 

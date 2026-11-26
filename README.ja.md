@@ -179,7 +179,7 @@ loopfinder は無償です。知らなかった輪が見つかったら、[Ko-fi
 
 GitHub で公開（MIT）。CI は `test.yml`（Ubuntu・Windows × Node 18・22）。npm には出していない。
 
-- VS Code 拡張は `vscode/`。Marketplace・Open VSX にはまだ出していない
+- VS Code 拡張は `vscode/`。Visual Studio Marketplace と Open VSX に出している（上の「VS Code で使う」を参照）
 
 ## ライセンス
 
