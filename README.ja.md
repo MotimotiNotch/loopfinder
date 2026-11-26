@@ -175,6 +175,12 @@ module.exports = ({ config, graph }) => ({
 
 loopfinder は無償です。知らなかった輪が見つかったら、[Ko-fi](https://ko-fi.com/motimotinotch) で投げ銭してもらえると嬉しいです。保守はできる範囲で行います。
 
+## 出し方
+
+GitHub で公開（MIT）。CI は `test.yml`（Ubuntu・Windows × Node 18・22）。npm には出していない。
+
+- VS Code 拡張は `vscode/`。Marketplace・Open VSX にはまだ出していない
+
 ## ライセンス
 
 MIT

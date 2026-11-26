@@ -205,6 +205,12 @@ module.exports = ({ config, graph }) => ({
 
 Layout by [dagre](https://github.com/dagrejs/dagre) (MIT, see `LICENSE-dagre`), which bundles [graphlib](https://github.com/dagrejs/graphlib) (MIT, see `LICENSE-graphlib`). Icons from [Lucide](https://lucide.dev), vendored unmodified by `scripts/gen-icons.js` (ISC; `moon` and `info` derive from Feather, MIT; see `LICENSE-lucide`).
 
+## Release
+
+Published on GitHub (MIT). CI is `test.yml` (Ubuntu and Windows × Node 18 and 22). Not published to npm.
+
+- The VS Code extension lives in `vscode/`. It is not on the Marketplace or Open VSX yet.
+
 ## Support
 
 loopfinder is free. If it found a loop you did not know you had, a tip via
